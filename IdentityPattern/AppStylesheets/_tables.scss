@@ -1,0 +1,53 @@
+﻿
+
+table.webgrid, table.-mko-centered-content {
+    tbody {
+        td {
+            text-align: center;
+        }
+
+        td:first-child {
+            text-align: left;
+        }
+    }
+
+    thead {
+
+        th {
+            text-align: center;
+        }
+
+        th:first-child {
+            text-align: left;
+        }
+    }
+}
+
+table.-mko-centered-headers {
+    thead {
+
+        th {
+            text-align: center;
+        }
+
+        th:first-child {
+            text-align: left;
+        }
+    }
+}
+
+
+table.-mko-left-aligned-content {
+    tbody {
+        td {
+            text-align: left;
+        }
+    }
+
+    thead {
+
+        th {
+            text-align: left;
+        }
+    }
+}

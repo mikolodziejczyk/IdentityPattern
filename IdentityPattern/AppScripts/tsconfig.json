@@ -1,0 +1,26 @@
+﻿{
+  "compilerOptions": {
+    "module": "es2015",
+    "target": "es5",
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
+    "lib": [
+      "es5",
+      "es2015.core",
+      "es2015.collection",
+      "es2015.iterable",
+      "es2017.object",
+      "es2015.promise",
+      "es2016.array.include",
+      "dom"
+    ],
+    "downlevelIteration": true,
+    "sourceMap": true
+  },
+  "include": [
+    "**/*.ts"
+  ],
+  "importHelpers": true,
+  "compileOnSave": false
+
+}

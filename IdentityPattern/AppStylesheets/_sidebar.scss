@@ -1,0 +1,82 @@
+﻿/* This overrides settings for the left sidebar menu */
+
+/*
+
+    Headers without icons: use .list-group-item .-mko-menu-header and <h4> inside 
+    Headers with icons: same as headers without icons but add .-mko-menu-item-with-icon and a .-mko--menu-icon-iconName
+    Put <hr> after each header with items. 
+    Items: .list-group-item .-mko-menu-item
+
+*/
+
+@import '_pc-global-variables.scss';
+
+$sidebar_text_color: #236ab2;
+$sidebar_background_color: white;
+$sidebar_separator_color: #dadada;
+$sidebar_header_indent: 72px;
+$sidebar_item_additional_indent: 8px;
+
+
+#sidebar {
+    background: $sidebar_background_color;
+    min-height: 100vh;
+    padding-top: 30px;
+
+    .list-group {
+        box-shadow: none;
+
+        .list-group-item {
+            border: none;
+            color: $sidebar_text_color;
+
+            &:focus {
+                font-family: $font_family_bold;
+                background: none;
+            }
+
+            &:hover {
+                font-family: $font_family_bold;
+                background: none;
+            }
+
+            &:active {
+                font-family: $font_family_bold;
+                background: none;
+            }
+
+            &.disabled {
+                font-family: $font_family_regular;
+                background: none;
+            }
+            /* Adds proper space on the left for all menu headers, both for those with icons and without */
+            &.-mko-menu-header {
+                padding-left: $sidebar_header_indent;
+
+                // pull the first item up
+                & + a.list-group-item.-mko-menu-item {
+                    margin-top: -8px;
+                }
+            }
+            /* .-mko-menu-item-with-icon always goes with .-mko-menu-header, but .-mko-menu-header can be without .-mko-menu-item-with-icon */
+            &.-mko-menu-item-with-icon {
+                background-position: 30px center;
+                background-repeat: no-repeat;
+                background-size: 24px 24px;
+            }
+            /* Adds proper space on the left for all menu items, slighly more then for a header  */
+            &.-mko-menu-item {
+                padding-left: $sidebar_header_indent+$sidebar_item_additional_indent;
+            }
+        }
+        /* Gives thin horizonal line, required after each header with item ends */
+        hr {
+            margin-top: 1px;
+            margin-bottom: 1px;
+            margin-left: 30px;
+            margin-right: 30px;
+            border: 0;
+            border-top: 1px solid $sidebar_separator_color;
+        }
+    }
+}

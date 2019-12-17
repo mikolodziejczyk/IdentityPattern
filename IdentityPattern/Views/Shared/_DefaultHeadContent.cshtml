@@ -1,0 +1,16 @@
+<link href="@Url.MkoStylesheet("~/dist/bootstrap/css/bootstrap.min.css")" rel="stylesheet" type="text/css" />
+<link href="@Url.MkoStylesheet("~/dist/bootstrap/css/bootstrap-theme.min.css")" rel="stylesheet" type="text/css" />
+<link href="@Url.MkoStylesheet("~/dist/font-awesome/css/fontawesome.min.css")" rel="stylesheet" type="text/css" />
+<link href="@Url.MkoStylesheet("~/dist/MyApp/css/bundle.css")" rel="stylesheet" />
+
+@if (IdentityPattern.Properties.Settings.Default.AlwaysUsePolyfills || this.Request.UserAgent.Contains("MSIE") || this.Request.UserAgent.Contains("Trident"))
+{
+    <script src="@Url.MkoScript("~/dist/MyApp/Scripts/polyfills.js")" type="text/javascript"></script>
+}
+
+@{ Html.RenderPartial("Helpers/mkoLocalize");}
+
+<script src="@Url.MkoScript("~/dist/MyApp/Scripts/bundle.min.js")" type="text/javascript"></script>
+<script src="@Url.MkoScript("~/dist/MyApp/Scripts/bundle_2.js")" type="text/javascript"></script>
+
+@{ Html.RenderPartial("Helpers/jQueryValidateDecimalPointCorrection");}

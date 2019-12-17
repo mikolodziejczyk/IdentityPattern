@@ -1,0 +1,62 @@
+﻿/* Contains styles for the location front page - the page when you enter a particular location, with panes  */
+
+$location_front_page_pane_background: #437eb9;
+$location_front_page_pane_margin:   20px;
+
+#content div.-mko-location-front-page {
+    /* everyting is separated by 30px from the sidebar */
+    margin-left: 30px;
+    margin-right: 30px;
+    /* thre's a special header here with an icon below */
+    h1 {
+        color: #0c5daf; // this must match the color from the image
+        font-size: 32px;
+    }
+    /*
+        -mko-lfp-panes-container is container for floating panes.
+        Similar technique to bootstrap rows and cells is used - container has a negative horizontal margin to compensate the horizontal margin of panes for the first and last item in a row
+   */
+    div.-mko-lfp-panes-container {
+        margin-left: -$location_front_page_pane_margin;
+        margin-right: -$location_front_page_pane_margin;
+        /* a single floating pane */
+        a.-mko-lfp-pane {
+            display: block;
+            float: left;
+            width: 190px;
+            height: 200px;
+            background: $location_front_page_pane_background;
+            margin: $location_front_page_pane_margin;
+            padding: 14px;
+            text-align: right;
+            text-decoration: none;
+
+            &:hover {
+                background: darken($location_front_page_pane_background, 10%);
+            }
+
+            &:active {
+                background: darken($location_front_page_pane_background, 20%);
+            }
+            /* an icon within the pane */
+            img.-mko-lfp-pane-icon {
+                height: 72px;
+                width: 72px;
+                margin-bottom: 18px;
+            }
+
+            /* no-icon pane replacement */
+            div.-mko-lfp-pane-icon {
+                height: 72px;
+                width: 72px;
+                margin-bottom: 18px;
+            }
+
+            /* text within the pane */
+            span.-mko-lfp-pane-text {
+                color: white;
+                font-size: 24px;
+            }
+        }
+    }
+}

@@ -1,0 +1,69 @@
+/* General layout - margin reduction */
+nav.navbar {
+  margin-bottom: 0px;
+}
+
+.page-header {
+  margin: 0 0 15px;
+}
+
+/* The back button in page-head - ensure some spacing between header text and the button */
+h1 .btn.mko-back-button {
+  margin-left: 10px;
+}
+
+/* .-mko-actions-form */
+/* ensuring proper button wrapping w/o unnecessary spacing */
+form.-mko-actions-form {
+  margin-top: -8px;
+}
+
+.-mko-actions-form > .btn, .-mko-actions-form > .form-group, .-mko-actions-form > .btn-group {
+  margin-top: 8px;
+}
+
+.-mko-actions-form > .btn {
+  padding-left: 1em;
+  padding-right: 1em;
+}
+
+/* ensuring spacing before the search area */
+.-mko-actions-form > .form-group.pull-right {
+  margin-left: 10px;
+}
+
+/* Index page - we want some separation between the buttons and grid */
+form.-mko-actions-form + table.webgrid {
+  margin-top: 20px;
+}
+
+/* Index page - correcting pager vertical spacing */
+ul.pagination {
+  margin: 5px 0px 0px 0px;
+}
+
+/* Index page - in a webgrid we want the first column aligned left and then remaining centered */
+table.webgrid th {
+  text-align: center;
+}
+
+table.webgrid th:first-child {
+  text-align: left;
+}
+
+/* Form actions - vertical spacing to various subsequent elements */
+/* Fluid display form */
+form.-mko-actions-form + .-mko-fluid-display-form {
+  margin-top: 20px;
+}
+
+/* Panel */
+form.-mko-actions-form + .panel {
+  margin-top: 20px;
+}
+
+/* Well */
+form.-mko-actions-form + .well {
+  margin-top: 20px;
+}
+/*# sourceMappingURL=simpleLayout.css.map */

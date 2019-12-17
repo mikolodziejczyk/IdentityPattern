@@ -1,0 +1,19 @@
+﻿@model Tuple<string, string, string>
+<a class="-mko-lfp-pane" href="@Model.Item1">
+    @if (@Model.Item2 != null)
+    {
+        <div>
+            <img class="-mko-lfp-pane-icon" src="@Model.Item2" alt="" />
+        </div>
+    }
+    else
+    {
+        <div>
+            <div class="-mko-lfp-pane-icon" alt="" ></div>
+        </div>
+
+    }
+    <div>
+        <span class="-mko-lfp-pane-text">@Model.Item3</span>
+    </div>
+</a>

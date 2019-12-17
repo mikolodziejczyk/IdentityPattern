@@ -1,0 +1,35 @@
+﻿/* -mko-large-table is .table-responsive without the threshold, i.e. always with scrolling
+    Used for tables with many columns to make them look reasonable */
+
+.-mko-large-table {
+    min-height: 0.01%;
+    overflow-x: auto;
+    border: 1px solid #ddd;
+    margin-bottom: 15px;
+    overflow-y: hidden;
+    width: 100%;
+}
+
+.-mko-large-table > .table {
+    margin-bottom: 0;
+}
+
+.-mko-large-table > .table > tbody > tr > td, .-mko-large-table > .table > tbody > tr > th, .-mko-large-table > .table > tfoot > tr > td, .-mko-large-table > .table > tfoot > tr > th, .-mko-large-table > .table > thead > tr > td, .-mko-large-table > .table > thead > tr > th {
+    white-space: nowrap;
+}
+
+.-mko-large-table > .table-bordered {
+    border: 0 none;
+}
+
+.-mko-large-table > .table-bordered > tbody > tr > td:first-child, .-mko-large-table > .table-bordered > tbody > tr > th:first-child, .-mko-large-table > .table-bordered > tfoot > tr > td:first-child, .-mko-large-table > .table-bordered > tfoot > tr > th:first-child, .-mko-large-table > .table-bordered > thead > tr > td:first-child, .-mko-large-table > .table-bordered > thead > tr > th:first-child {
+    border-left: 0 none;
+}
+
+.-mko-large-table > .table-bordered > tbody > tr > td:last-child, .-mko-large-table > .table-bordered > tbody > tr > th:last-child, .-mko-large-table > .table-bordered > tfoot > tr > td:last-child, .-mko-large-table > .table-bordered > tfoot > tr > th:last-child, .-mko-large-table > .table-bordered > thead > tr > td:last-child, .-mko-large-table > .table-bordered > thead > tr > th:last-child {
+    border-right: 0 none;
+}
+
+.-mko-large-table > .table-bordered > tbody > tr:last-child > td, .-mko-large-table > .table-bordered > tbody > tr:last-child > th, .-mko-large-table > .table-bordered > tfoot > tr:last-child > td, .-mko-large-table > .table-bordered > tfoot > tr:last-child > th {
+    border-bottom: 0 none;
+}

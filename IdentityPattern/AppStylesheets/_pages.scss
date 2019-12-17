@@ -1,0 +1,77 @@
+﻿/* Contains styles for content pages */
+
+#content {
+    /* Removes a horizonal line under .page-header and the top margin (there's sufficient margin from the navbar) */
+    div.page-header {
+        border-bottom: none;
+        margin-top: 0px;
+
+        h1 {
+            margin-top: 0px;
+        }
+    }
+
+    h2 {
+        margin-top: 25px;
+        margin-bottom: 20px;
+    }
+    /* ensures proper spacing between a header with -mko-actions-form, and various elements */
+    form.-mko-actions-form {
+        & + table {
+            margin-top: 20px;
+        }
+        // special case in the invoice list page
+        & + form > table {
+            margin-top: 20px;
+        }
+
+        & + div.well {
+            margin-top: 20px;
+        }
+    }
+    /* Tables require explicit background */
+    table.table {
+        background: white;
+    }
+    /* White pane - container for section in information pages, like about page
+       <h2> can be put inside such a pane or outside 
+    */
+    .-mko-white-info-pane {
+        background-color: rgba(255,255,255,0.8);
+        margin-top: 20px;
+        margin-bottom: 20px;
+        margin-left: 0px;
+        margin-right: 0px;
+        box-shadow: 0 0 5px #ccc;
+        border-radius: 5px;
+        padding: 30px;
+        font-size: 16px;
+        /* adjustments when h2 is used inside pane */
+        h2 {
+            margin-top: -10px;
+            margin-bottom: 20px;
+        }
+    }
+    /* White panes is Details pages
+       Every section should be wrapped in it.
+        Use togeter with the Bootstrap
+        Put <h2> inside such a pane
+    */
+    .-mko-display-section {
+        background-color: rgba(255,255,255,0.8);
+        margin-top: 20px;
+        padding-top: 10px;
+        padding-bottom: 10px;
+        padding-left: 15px;
+        padding-right: 15px;
+        box-shadow: 0 0 5px #ccc;
+        border-radius: 5px;
+
+
+        h2 {
+            margin-top: 0px;
+            margin-bottom: 10px;
+        }
+    }
+}
+
