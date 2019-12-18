@@ -1,0 +1,35 @@
+﻿$app-footer-height: 30px;
+
+body.anonymous {
+    min-height: calc(100vh - #{$app-footer-height});
+    margin-bottom: unquote($app-footer-height);
+
+    div.-app-footer {
+        position: fixed;
+        bottom: 0px;
+        left: 0px;
+        right: 0px;
+        height: 30px;
+        padding: 5px 15px;
+        font-size: 12px;
+        background-color: #bbb;
+        text-align: right;
+    }
+
+    div.-app-cookie-consent {
+        display: none;
+        position: fixed;
+        padding: unquote($app-footer-height);
+        left: 0;
+        bottom: 0;
+        background-color: #000;
+        color: #FFF;
+        text-align: center;
+        width: 100%;
+        z-index: 99999;
+    }
+
+    div.-app-cookie-consent a {
+        margin-left: 2em;
+    }
+}

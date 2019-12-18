@@ -6,48 +6,9 @@
     <title>@ViewBag.Title</title>
     @{Html.RenderPartial("_DefaultHeadContent");}
     @RenderSection("AdditionalHead", required: false)
-
-    <style type="text/css">
-        body {
-            min-height: calc(100vh - 30px);
-            margin-bottom: 30px;
-        }
-
-        div.-app-footer {
-            position: fixed;
-            bottom: 0px;
-            left: 0px;
-            right: 0px;
-            height: 30px;
-            padding: 5px 15px;
-            font-size: 12px;
-            background-color: #bbb;
-            text-align: right;
-        }
-
-        div.-app-cookie-consent {
-            display: none;
-            position: fixed;
-            padding: 30px;
-            left: 0;
-            bottom: 0;
-            background-color: #000;
-            color: #FFF;
-            text-align: center;
-            width: 100%;
-            z-index: 99999;
-        }
-
-        div.-app-cookie-consent a {
-            margin-left: 2em;
-        }
-    </style>
 </head>
-<body>
+<body class="anonymous">
     @RenderBody()
-    @{Html.RenderPartial("_DefaultFinalScripts");}
-
-
 
     <div class="-app-cookie-consent">
         Ta strona używa ciasteczek (cookies), dzięki którym może działać. Korzystając ze strony zgadzasz się na zapisywanie prywatnych danych zawartych w plikach cookie i podobnych technologiach.
@@ -60,6 +21,8 @@
             <a href='@Url.Action("TermsAndConditions","Home")'>Warunki korzystania z serwisu</a> | <a href='@Url.Action("PrivacyPolicy","Home")'>Polityka prywatności</a>
         </span>
     </div>
+
+    @{Html.RenderPartial("_DefaultFinalScripts");}
 
     <script type="text/javascript">
         (function () {
