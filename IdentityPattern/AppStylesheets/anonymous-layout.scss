@@ -1,6 +1,11 @@
 ﻿$app-footer-height: 30px;
 
 body.anonymous {
+    background: url('../../mko-resources/images/hexagons_background.svg'), #f4f4f4;
+    background-size: contain;
+    background-attachment: fixed;
+    background-position: bottom right;
+    background-repeat: no-repeat;
     min-height: calc(100vh - #{$app-footer-height});
     margin-bottom: unquote($app-footer-height);
 

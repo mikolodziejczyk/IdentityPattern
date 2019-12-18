@@ -43,6 +43,12 @@ namespace IdentityPattern.Controllers
 
             ApplicationUser user = userManager.FindByName(model.UserName);
 
+            if (user==null)
+            {
+                ModelState.AddModelError("", "Nie udało się zalogować.");
+                return View(model);
+            }
+
             if (user.AccessFailedCount > 3)
             {
                 // require captcha

@@ -242,6 +242,7 @@
     <Content Include="AppScripts\tsconfig.json" />
     <Content Include=".stylelintrc" />
     <Content Include="AppStylesheets\anonymous-layout.scss" />
+    <Content Include="AppStylesheets\Account_Login.scss" />
     <None Include="Properties\Settings.settings">
       <Generator>PublicSettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
