@@ -6,10 +6,54 @@
     <title>@ViewBag.Title</title>
     @{Html.RenderPartial("_DefaultHeadContent");}
     @RenderSection("AdditionalHead", required: false)
+
+    <style type="text/css">
+        body {
+            min-height: calc(100vh - 30px);
+            margin-bottom: 30px;
+        }
+
+        div.-app-footer {
+            position: fixed;
+            bottom: 0px;
+            left: 0px;
+            right: 0px;
+            height: 30px;
+            padding: 5px 15px;
+            font-size: 12px;
+            background-color: #bbb;
+            text-align: right;
+        }
+    </style>
 </head>
 <body>
     @RenderBody()
     @{Html.RenderPartial("_DefaultFinalScripts");}
+
+    <script type="text/javascript">
+    (function () {
+        if (!localStorage.getItem('cookieconsent')) {
+            document.body.innerHTML += '\
+		<div class="cookieconsent" style="position:fixed;padding:30px;left:0;bottom:0;background-color:#000;color:#FFF;text-align:center;width:100%;z-index:99999;">\
+			Ta strona internetowa używa plików cookie wyłącznie w zakresie niezbędnym do świadczenia usługi. \
+			<a href="#" style="color:#CCCCCC;">Rozumiem</a>\
+		</div>\
+		';
+            document.querySelector('.cookieconsent a').onclick = function (e) {
+                e.preventDefault();
+                document.querySelector('.cookieconsent').style.display = 'none';
+                localStorage.setItem('cookieconsent', true);
+            };
+        }
+    })();
+    </script>
+
+    <div class="-app-footer clearfix">
+        <span class="pull-left">© Copyright 2018 by twojafirma.com.pl. Wszelkie prawa zastrzeżone.</span>
+        <span class="pull-right">
+            <a href="@Html.ActionLink("TermsAndConditions","Home")">Warunki korzystania z serwisu</a> | <a href="@Html.ActionLink("PrivacyPolicy","Home")">Polityka prywatności</a>
+        </span>
+    </div>
 </body>
 </html>
 
