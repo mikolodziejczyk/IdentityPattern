@@ -1,0 +1,72 @@
+﻿@model  IdentityPattern.Models.Identity.SignInVM
+
+@{
+    ViewBag.Title = "SignIn";
+    Layout = "~/Views/Shared/_AnonymousLayout.cshtml";
+}
+
+<style type="text/css">
+    body {
+        background: url(/dist/mko-resources/images/hexagons_background.svg),#f4f4f4;
+        background-size: contain;
+        background-attachment: fixed;
+        background-position: bottom right;
+        background-repeat: no-repeat;
+    }
+
+    form {
+        margin-top: calc(25vh - 100px);
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        padding: 30px 30px;
+    }
+
+        form h2 {
+            margin-top: -10px;
+            margin-bottom: 30px;
+        }
+
+        form div.-app-button-container {
+            margin-top: 20px;
+        }
+
+        form div.-app-links-container {
+            margin-top: 20px;
+        }
+
+</style>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-sm-3 col-sm-offset-2">
+            <form>
+                <h2>Zaloguj</h2>
+                <div class="form-group">
+                    @Html.LabelFor(x => x.UserName)
+                    @Html.TextBoxFor(x => x.UserName, new { @class = "form-control", placeholder = "jan.kowalski@firma.com.pl" })
+                    @Html.ValidationMessageFor(x => x.UserName)
+                </div>
+                <div class="form-group">
+                    @Html.LabelFor(x => x.Password)
+                    @Html.TextBoxFor(x => x.Password, new { @type = "password", @class = "form-control" })
+                    @Html.ValidationMessageFor(x => x.Password)
+                </div>
+                <div class="checkbox">
+                    <label>
+                        @Html.CheckBoxFor(x => x.RememberMe) @Html.DisplayNameFor(x => x.RememberMe)
+                    </label>
+                </div>
+                <div >
+                    @Html.BootstrapValidationSummary()
+                </div>
+                <div class="-app-button-container clearfix">
+                    <button type="submit" class="btn btn-default btn-lg pull-right">Zaloguj</button>
+                </div>
+                <div class="-app-links-container">
+                    <a href="#">Zapomiałeś hasła?</a><br />
+                    Nie masz jeszcze konta? <a href="#">Zarejestruj się.</a><br />
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
