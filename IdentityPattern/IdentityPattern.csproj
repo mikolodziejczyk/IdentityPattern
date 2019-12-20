@@ -194,6 +194,7 @@
     <Compile Include="App_Start\FilterConfig.cs" />
     <Compile Include="App_Start\RazorGeneratorMvcStart.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
+    <Compile Include="Controllers\AboutController.cs" />
     <Compile Include="Controllers\AccountController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Global.asax.cs">
@@ -279,6 +280,8 @@
     <Content Include="Views\Home\Index.cshtml" />
     <Content Include="Views\Account\SignIn.cshtml" />
     <Content Include="Views\Shared\_AnonymousLayout.cshtml" />
+    <Content Include="Views\About\TermsAndConditions.cshtml" />
+    <Content Include="Views\About\PrivacyPolicy.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
