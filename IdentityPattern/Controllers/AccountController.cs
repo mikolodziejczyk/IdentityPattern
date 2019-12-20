@@ -8,6 +8,7 @@ using System.Web;
 using System.Web.Mvc;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.Owin;
+using Microsoft.Owin.Security;
 
 namespace IdentityPattern.Controllers
 {
@@ -15,11 +16,13 @@ namespace IdentityPattern.Controllers
     {
         private readonly ApplicationUserManager userManager;
         private readonly ApplicationSignInManager signInManager;
+        private readonly IAuthenticationManager authenicationManager;
 
-        public AccountController(ApplicationUserManager userManager, ApplicationSignInManager signInManager)
+        public AccountController(ApplicationUserManager userManager, ApplicationSignInManager signInManager, IAuthenticationManager authenicationManager)
         {
             this.userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
             this.signInManager = signInManager ?? throw new ArgumentNullException(nameof(signInManager));
+            this.authenicationManager = authenicationManager ?? throw new ArgumentNullException(nameof(authenicationManager));
         }
 
 
@@ -57,19 +60,19 @@ namespace IdentityPattern.Controllers
 
             if (!user.EmailConfirmed)
             {
-                ModelState.AddModelError("", "Your e-mail has not been confirmed. Please find an e-mail in your mailbox and click the link we have sent you to confirm your e-mail.");
+                ModelState.AddModelError("", "Nie potwierdziłeś adresu e-mail. Na podany adres otrzymałeś wiadomość e-mail z łączem do potwierdzenia adresu.");
                 return View(model);
             }
 
             if (!user.IsApproved)
             {
-                ModelState.AddModelError("", "The user has not been yet approved by the administrator.");
+                ModelState.AddModelError("", "Twoje konto nie zostało jeszcze zaakceptowane przez administratora.");
                 return View(model);
             }
 
             if (user.IsDisabled)
             {
-                ModelState.AddModelError("", "The user has been disabled. You cannot log in.");
+                ModelState.AddModelError("", "Twoje konto zostało zablokowane nie możesz się zalogować..");
                 return View(model);
             }
 
@@ -80,15 +83,20 @@ namespace IdentityPattern.Controllers
             {
                 case SignInStatus.Success:
                     return RedirectToLocal(returnUrl);
-                //case SignInStatus.LockedOut:
-                //    return View("Lockout");
-                //case SignInStatus.RequiresVerification:
-                //    return RedirectToAction("SendCode", new { ReturnUrl = returnUrl, RememberMe = model.RememberMe });
+                case SignInStatus.LockedOut:
+                    ModelState.AddModelError("", "Twoje konto zostało tymczasowo zablokowane. Spróbuj później.");
+                    return View(model);
                 case SignInStatus.Failure:
                 default:
-                    ModelState.AddModelError("", "Invalid login attempt.");
+                    ModelState.AddModelError("", "Nie udało się zalogować.");
                     return View(model);
             }
+        }
+
+        public ActionResult SignOut()
+        {
+            authenicationManager.SignOut();
+            return RedirectToAction("SignIn");
         }
 
         private ActionResult RedirectToLocal(string returnUrl)

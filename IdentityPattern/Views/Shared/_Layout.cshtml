@@ -38,10 +38,22 @@
 
                 <ul class="nav navbar-nav navbar-right">
                     <li>
-                        <a href="@Url.Action("Details", "User", new { id = 0 /*@currentUser.Id*/ })">
-                            <img class="-mko-current-user-icon" src="@Url.Content("~/dist/mko-resources/images/icons/userprofile.svg")" alt="" />&nbsp;John Doe@*@currentUser.Name*@
+                        <a class="dropdown-toggle" href="@Url.Action("Details", "User", new { id = 0 /*@currentUser.Id*/ })" data-toggle="dropdown">
+                            <img class="-mko-current-user-icon" src="@Url.Content("~/dist/mko-resources/images/icons/userprofile.svg")" alt="" />&nbsp;@User.Identity.Name&nbsp;<span class="caret"></span>
                         </a>
+                        <ul class="dropdown-menu">
+                            <li><a href="#">Moje konto</a></li>
+                            <li role="separator" class="divider"></li>
+                            <li>
+                                <a href="@Url.Action("SignOut", "Account", new { id = 0 /*@currentUser.Id*/ })">
+                                    Wyloguj
+                                </a>
+                            </li>
+                        </ul>
                     </li>
+                    <li>
+                    </li>
+
                 </ul>
             </div>
             <!-- /.navbar-collapse -->
