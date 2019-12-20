@@ -9,6 +9,10 @@ using System.Web.Mvc;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.Owin;
 using Microsoft.Owin.Security;
+using System.Collections.Specialized;
+using System.Net;
+using System.Text;
+using Newtonsoft.Json;
 
 namespace IdentityPattern.Controllers
 {
@@ -46,7 +50,7 @@ namespace IdentityPattern.Controllers
 
             ApplicationUser user = userManager.FindByName(model.UserName);
 
-            if (user==null)
+            if (user == null)
             {
                 ModelState.AddModelError("", "Nie udało się zalogować.");
                 return View(model);
@@ -112,6 +116,31 @@ namespace IdentityPattern.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult Register(RegisterVM model)
         {
+
+            string response = this.Request.Form["g-recaptcha-response"];
+
+            var nvc = new NameValueCollection();
+            nvc.Add("secret", "yourSecretKey");
+            nvc.Add("response", response);
+            nvc.Add("remoteip", this.Request.UserHostAddress);
+            byte[] result;
+
+            using (WebClient wc = new WebClient())
+            {
+                result = wc.UploadValues("https://www.google.com/recaptcha/api/siteverify", "POST", nvc);
+            }
+
+            string r = Encoding.UTF8.GetString(result);
+            dynamic ro = JsonConvert.DeserializeObject(r);
+
+            if (!ro.success) throw new InvalidOperationException("Invalid captcha");
+
+            string host = ro.hostname; // the host returned by google
+            string actualHost = this.Request.Url.Host;
+            bool matches = host == actualHost;
+
+            if (!matches) throw new InvalidOperationException("Captcha orgin doesn't match.");
+
             ApplicationUser user = new ApplicationUser() { UserName = model.Email, Email = model.Email };
             IdentityResult result = userManager.Create(user, model.Password);
 

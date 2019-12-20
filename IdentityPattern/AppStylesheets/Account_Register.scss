@@ -22,10 +22,15 @@
         /*div.-app-links-container {
             margin-top: 20px;
         }*/
-        .validation-summary-errors ul {
-            list-style-type: none;
-            margin: 0;
-            padding: 0;
+        .validation-summary-errors {
+            margin-bottom: 20px;
+            margin-top: 20px;
+
+            ul {
+                list-style-type: none;
+                margin: 0;
+                padding: 0;
+            }
         }
     }
 }

@@ -40,5 +40,23 @@ namespace IdentityPattern.Properties {
                 return ((string)(this["ConfirmMailTitle"]));
             }
         }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("6LfuASYUAAAAAGfrhEwEqxV4J9SvUtIcvKxg_om4")]
+        public string CaptchaPublicKey {
+            get {
+                return ((string)(this["CaptchaPublicKey"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("6LfuASYUAAAAABq3XsxHCrfO9RBaHZ-LNH0lD2Qh")]
+        public string CaptchaSecret {
+            get {
+                return ((string)(this["CaptchaSecret"]));
+            }
+        }
     }
 }

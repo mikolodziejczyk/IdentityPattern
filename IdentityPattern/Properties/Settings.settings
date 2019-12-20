@@ -8,5 +8,11 @@
     <Setting Name="ConfirmMailTitle" Type="System.String" Scope="Application">
       <Value Profile="(Default)">Moja aplikacja - potwierdź swój adres e-mail</Value>
     </Setting>
+    <Setting Name="CaptchaPublicKey" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">6LfuASYUAAAAAGfrhEwEqxV4J9SvUtIcvKxg_om4</Value>
+    </Setting>
+    <Setting Name="CaptchaSecret" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">6LfuASYUAAAAABq3XsxHCrfO9RBaHZ-LNH0lD2Qh</Value>
+    </Setting>
   </Settings>
 </SettingsFile>
