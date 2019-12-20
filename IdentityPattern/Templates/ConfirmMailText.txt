@@ -1,0 +1,7 @@
+﻿Dzień dobry,
+
+Potwierdź swój adres e-mail klikając na ten link:
+<a href={0}>Potwierdź swój adres e-mail</a>
+
+Pozdrawiamy,
+Zespół obsługi systemu

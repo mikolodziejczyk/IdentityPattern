@@ -99,6 +99,52 @@ namespace IdentityPattern.Controllers
             return RedirectToAction("SignIn");
         }
 
+        [HttpGet]
+        [AllowAnonymous]
+        public ActionResult Register()
+        {
+            return View(new RegisterVM());
+        }
+
+
+        [HttpPost]
+        [AllowAnonymous]
+        [ValidateAntiForgeryToken]
+        public ActionResult Register(RegisterVM model)
+        {
+            ApplicationUser user = new ApplicationUser() { UserName = model.Email, Email = model.Email };
+            IdentityResult result = userManager.Create(user, model.Password);
+
+            if (result.Succeeded)
+            {
+                string code = userManager.GenerateEmailConfirmationToken(user.Id);
+
+                var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code = code }, protocol: Request.Url.Scheme);
+
+                string mailContentPath = System.IO.Path.Combine(System.Web.Hosting.HostingEnvironment.ApplicationPhysicalPath, "Templates/ConfirmMailText.txt");
+
+                string mailContent = System.IO.File.ReadAllText(mailContentPath);
+                mailContent = String.Format(mailContent, callbackUrl);
+
+                userManager.SendEmail(user.Id, Properties.Settings.Default.ConfirmMailTitle, mailContent);
+
+                return RedirectToAction("RegisterConfirm");
+            }
+            else
+            {
+                ModelState.AddModelError("", result.Errors.FirstOrDefault());
+            }
+
+            return View(model);
+        }
+
+        [HttpGet]
+        [AllowAnonymous]
+        public ActionResult RegisterConfirm()
+        {
+            return View();
+        }
+
         private ActionResult RedirectToLocal(string returnUrl)
         {
             if (Url.IsLocalUrl(returnUrl))

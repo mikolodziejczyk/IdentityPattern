@@ -31,5 +31,14 @@ namespace IdentityPattern.Properties {
                 return ((bool)(this["AlwaysUsePolyfills"]));
             }
         }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("Moja aplikacja - potwierdź swój adres e-mail")]
+        public string ConfirmMailTitle {
+            get {
+                return ((string)(this["ConfirmMailTitle"]));
+            }
+        }
     }
 }

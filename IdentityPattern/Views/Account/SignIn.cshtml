@@ -29,14 +29,14 @@
                         </label>
                     </div>
                     <div>
-                        @Html.ValidationSummary()
+                        @Html.ValidationSummary(true)
                     </div>
                     <div class="-app-button-container clearfix">
                         <button type="submit" class="btn btn-default btn-lg pull-right">Zaloguj</button>
                     </div>
                     <div class="-app-links-container">
                         <a href="#">Zapomiałeś hasła?</a><br />
-                        Nie masz jeszcze konta? <a href="#">Zarejestruj się.</a><br />
+                        Nie masz jeszcze konta? <a href='@Url.Action("Register")'>Zarejestruj się.</a><br />
                     </div>
                 </form>
             </div>
