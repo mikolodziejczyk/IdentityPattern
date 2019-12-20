@@ -116,30 +116,7 @@ namespace IdentityPattern.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult Register(RegisterVM model)
         {
-
-            string response = this.Request.Form["g-recaptcha-response"];
-
-            var nvc = new NameValueCollection();
-            nvc.Add("secret", "yourSecretKey");
-            nvc.Add("response", response);
-            nvc.Add("remoteip", this.Request.UserHostAddress);
-            byte[] result;
-
-            using (WebClient wc = new WebClient())
-            {
-                result = wc.UploadValues("https://www.google.com/recaptcha/api/siteverify", "POST", nvc);
-            }
-
-            string r = Encoding.UTF8.GetString(result);
-            dynamic ro = JsonConvert.DeserializeObject(r);
-
-            if (!ro.success) throw new InvalidOperationException("Invalid captcha");
-
-            string host = ro.hostname; // the host returned by google
-            string actualHost = this.Request.Url.Host;
-            bool matches = host == actualHost;
-
-            if (!matches) throw new InvalidOperationException("Captcha orgin doesn't match.");
+            VerfiyCaptcha();
 
             ApplicationUser user = new ApplicationUser() { UserName = model.Email, Email = model.Email };
             IdentityResult result = userManager.Create(user, model.Password);
@@ -167,6 +144,7 @@ namespace IdentityPattern.Controllers
             return View(model);
         }
 
+
         [HttpGet]
         [AllowAnonymous]
         public ActionResult RegisterConfirm()
@@ -181,6 +159,35 @@ namespace IdentityPattern.Controllers
                 return Redirect(returnUrl);
             }
             return RedirectToAction("Index", "Home");
+        }
+
+
+        private byte[] VerfiyCaptcha()
+        {
+            string response = this.Request.Form["g-recaptcha-response"];
+
+            var nvc = new NameValueCollection();
+            nvc.Add("secret", Properties.Settings.Default.CaptchaSecret);
+            nvc.Add("response", response);
+            nvc.Add("remoteip", this.Request.UserHostAddress);
+            byte[] result;
+
+            using (WebClient wc = new WebClient())
+            {
+                result = wc.UploadValues("https://www.google.com/recaptcha/api/siteverify", "POST", nvc);
+            }
+
+            string r = Encoding.UTF8.GetString(result);
+            dynamic ro = JsonConvert.DeserializeObject(r);
+
+            if (!ro.success) throw new InvalidOperationException("Invalid captcha");
+
+            string host = ro.hostname; // the host returned by google
+            string actualHost = this.Request.Url.Host;
+            bool matches = host == actualHost;
+
+            if (!matches) throw new InvalidOperationException("Captcha orgin doesn't match.");
+            return result;
         }
     }
 }
