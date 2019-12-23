@@ -58,5 +58,14 @@ namespace IdentityPattern.Properties {
                 return ((string)(this["CaptchaSecret"]));
             }
         }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("Moja aplikacja - resetuj hasło")]
+        public string ResetPasswordTitle {
+            get {
+                return ((string)(this["ResetPasswordTitle"]));
+            }
+        }
     }
 }

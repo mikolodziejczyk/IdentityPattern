@@ -206,6 +206,7 @@
     <Compile Include="Identity\ApplicationUserManager.cs" />
     <Compile Include="Identity\EmailService.cs" />
     <Compile Include="Identity\Startup.cs" />
+    <Compile Include="Models\Identity\ForgotPasswordVM.cs" />
     <Compile Include="Models\Identity\RegisterVM.cs" />
     <Compile Include="Models\Identity\SignInVM.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -250,6 +251,7 @@
     <Content Include="AppStylesheets\Account_Login.scss" />
     <Content Include="AppStylesheets\Account_Register.scss" />
     <Content Include="AppStylesheets\Account_RegisterConfirm.scss" />
+    <Content Include="AppStylesheets\Account_ConfirmEmail.scss" />
     <None Include="Properties\Settings.settings">
       <Generator>PublicSettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -290,6 +292,7 @@
     <Content Include="Views\About\PrivacyPolicy.cshtml" />
     <Content Include="Views\Account\Register.cshtml" />
     <Content Include="Views\Account\RegisterConfirm.cshtml" />
+    <Content Include="Views\Account\ConfirmEmail.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

@@ -1,9 +1,13 @@
 ﻿@model System.Web.Mvc.HandleErrorInfo
 
 @{
-    ViewBag.Title = "Error";
+    ViewBag.Title = "Bład";
+    if (!User.Identity.IsAuthenticated)
+    {
+        Layout = "~/Views/Shared/_AnonymousLayout.cshtml";
+    }
 }
 
-<h1 class="text-danger">Error.</h1>
-<h2 class="text-danger">An error occurred while processing your request.</h2>
+<h1 class="text-danger text-center">Błąd.</h1>
+<h2 class="text-danger text-center"">Podczas przetwarzania żądania wystąpił błąd.</h2>
 

@@ -14,5 +14,8 @@
     <Setting Name="CaptchaSecret" Type="System.String" Scope="Application">
       <Value Profile="(Default)">6LfuASYUAAAAABq3XsxHCrfO9RBaHZ-LNH0lD2Qh</Value>
     </Setting>
+    <Setting Name="ResetPasswordTitle" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">Moja aplikacja - resetuj hasło</Value>
+    </Setting>
   </Settings>
 </SettingsFile>
