@@ -13,6 +13,7 @@ using System.Collections.Specialized;
 using System.Net;
 using System.Text;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace IdentityPattern.Controllers
 {
@@ -116,7 +117,7 @@ namespace IdentityPattern.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult Register(RegisterVM model)
         {
-            VerfiyCaptcha();
+            VerifyCaptcha();
 
             ApplicationUser user = new ApplicationUser() { UserName = model.Email, Email = model.Email };
             IdentityResult result = userManager.Create(user, model.Password);
@@ -162,7 +163,7 @@ namespace IdentityPattern.Controllers
         }
 
 
-        private byte[] VerfiyCaptcha()
+        private void VerifyCaptcha()
         {
             string response = this.Request.Form["g-recaptcha-response"];
 
@@ -178,16 +179,16 @@ namespace IdentityPattern.Controllers
             }
 
             string r = Encoding.UTF8.GetString(result);
-            dynamic ro = JsonConvert.DeserializeObject(r);
+            dynamic ro = JValue.Parse(r);
+            bool success = ro.success.ToObject<bool>();
 
-            if (!ro.success) throw new InvalidOperationException("Invalid captcha");
+            if (!success) throw new InvalidOperationException("Invalid captcha");
 
-            string host = ro.hostname; // the host returned by google
+            string host = ro.hostname.ToObject<string>(); // the host returned by google
             string actualHost = this.Request.Url.Host;
             bool matches = host == actualHost;
 
             if (!matches) throw new InvalidOperationException("Captcha orgin doesn't match.");
-            return result;
         }
     }
 }
