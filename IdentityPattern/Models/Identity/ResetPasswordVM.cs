@@ -6,7 +6,7 @@ using System.Web;
 
 namespace IdentityPattern.Models.Identity
 {
-    public class RegisterVM
+    public class ResetPasswordVM
     {
         [Required]
         [EmailAddress]
@@ -17,13 +17,15 @@ namespace IdentityPattern.Models.Identity
         [Required]
         [StringLength(100)]
         [DataType(DataType.Password)]
-        [Display(Name = "Hasło")]
+        [Display(Name = "Nowe hasło")]
         public string Password { get; set; }
 
-        [StringLength(100)]
         [DataType(DataType.Password)]
-        [Display(Name = "Powtórz hasło")]
+        [StringLength(100)]
+        [Display(Name = "Powtórz nowe hasło")]
         [Compare("Password", ErrorMessage = "Hasło i powtórzone hasło nie zgadzają się.")]
         public string ConfirmPassword { get; set; }
+
+        public string Code { get; set; }
     }
 }

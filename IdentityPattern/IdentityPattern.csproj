@@ -208,6 +208,7 @@
     <Compile Include="Identity\Startup.cs" />
     <Compile Include="Models\Identity\ForgotPasswordVM.cs" />
     <Compile Include="Models\Identity\RegisterVM.cs" />
+    <Compile Include="Models\Identity\ResetPasswordVM.cs" />
     <Compile Include="Models\Identity\SignInVM.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\Settings.Designer.cs">
@@ -257,6 +258,8 @@
     <Content Include="AppStylesheets\Account_ConfirmEmail.scss" />
     <Content Include="AppStylesheets\Account_ForgotPasswordConfirmation.scss" />
     <Content Include="AppStylesheets\Account_ForgotPassword.scss" />
+    <Content Include="AppStylesheets\Account_ResetPasswordConfirmation.scss" />
+    <Content Include="AppStylesheets\Account_ResetPassword.scss" />
     <None Include="Properties\Settings.settings">
       <Generator>PublicSettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -300,6 +303,8 @@
     <Content Include="Views\Account\ConfirmEmail.cshtml" />
     <Content Include="Views\Account\ForgotPassword.cshtml" />
     <Content Include="Views\Account\ForgotPasswordConfirmation.cshtml" />
+    <Content Include="Views\Account\ResetPassword.cshtml" />
+    <Content Include="Views\Account\ResetPasswordConfirmation.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

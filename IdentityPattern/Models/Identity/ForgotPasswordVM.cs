@@ -11,6 +11,7 @@ namespace IdentityPattern.Models.Identity
         [Required]
         [EmailAddress]
         [Display(Name = "E-mail")]
+        [StringLength(200)]
         public string Email { get; set; }
     }
 }

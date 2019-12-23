@@ -11,11 +11,13 @@ namespace IdentityPattern.Models.Identity
         [Required]
         [Display(Name = "E-mail")]
         [EmailAddress]
+        [StringLength(200)]
         public string UserName { get; set; }
 
         [Required]
         [DataType(DataType.Password)]
         [Display(Name = "Hasło")]
+        [StringLength(100)]
         public string Password { get; set; }
 
         [Display(Name = "Zapamiętaj mnie")]
