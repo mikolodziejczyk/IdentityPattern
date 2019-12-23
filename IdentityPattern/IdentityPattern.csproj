@@ -231,6 +231,9 @@
     <Content Include="gruntfile.js" />
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\bootstrap.min.js" />
+    <Content Include="Templates\ResetPasswordText.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Templates\ConfirmMailText.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -252,6 +255,8 @@
     <Content Include="AppStylesheets\Account_Register.scss" />
     <Content Include="AppStylesheets\Account_RegisterConfirm.scss" />
     <Content Include="AppStylesheets\Account_ConfirmEmail.scss" />
+    <Content Include="AppStylesheets\Account_ForgotPasswordConfirmation.scss" />
+    <Content Include="AppStylesheets\Account_ForgotPassword.scss" />
     <None Include="Properties\Settings.settings">
       <Generator>PublicSettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -293,6 +298,8 @@
     <Content Include="Views\Account\Register.cshtml" />
     <Content Include="Views\Account\RegisterConfirm.cshtml" />
     <Content Include="Views\Account\ConfirmEmail.cshtml" />
+    <Content Include="Views\Account\ForgotPassword.cshtml" />
+    <Content Include="Views\Account\ForgotPasswordConfirmation.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

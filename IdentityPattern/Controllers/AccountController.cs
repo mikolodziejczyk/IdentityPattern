@@ -178,6 +178,8 @@ namespace IdentityPattern.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> ForgotPassword(ForgotPasswordVM model)
         {
+            VerifyCaptcha();
+
             if (ModelState.IsValid)
             {
                 var user = await userManager.FindByNameAsync(model.Email);
