@@ -10,9 +10,22 @@
     <h4>Item 2</h4>
 </a>
 <hr />
-<a href="@Url.Action("Edit", "Home", new { id = 1})" class="list-group-item -mko-menu-header -mko-menu-item">
+<a href="@Url.Action("Index", "UserManagement")" class="list-group-item -mko-menu-header -mko-menu-item">
     <h4>Użytkownicy</h4>
 </a>
+<a href="@Url.Action("Index", "UserManagement")" class="list-group-item -mko-menu-item">
+    Wszyscy
+</a>
+<a href="@Url.Action("Index", "UserManagement", new { isApproved = true, isDisabled = false})" class="list-group-item -mko-menu-item">
+    Aktywni
+</a>
+<a href="@Url.Action("Index", "UserManagement", new { isApproved = false})" class="list-group-item -mko-menu-item">
+    Do akceptacji
+</a>
+<a href="@Url.Action("Index", "UserManagement", new { isDisabled = true})" class="list-group-item -mko-menu-item">
+    Zablokowani
+</a>
+
 <hr />
 <a href="@Url.Action("About", "Home")" class="list-group-item -mko-menu-header -mko-menu-item">
     <h4>O programie</h4>
