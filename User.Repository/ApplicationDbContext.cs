@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 
-namespace IdentityPattern.Identity
+namespace User.Repository
 {
     public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {

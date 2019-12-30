@@ -7,7 +7,7 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using System.Web;
 
-namespace IdentityPattern.Identity
+namespace User.Repository
 {
     public class ApplicationSignInManager : SignInManager<ApplicationUser, string>
     {

@@ -5,7 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Web;
 
-namespace IdentityPattern.Identity
+namespace User.Repository
 {
     public class EmailService : IIdentityMessageService
     {

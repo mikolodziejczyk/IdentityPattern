@@ -1,5 +1,4 @@
-﻿using IdentityPattern.Identity;
-using IdentityPattern.Models.Identity;
+﻿using IdentityPattern.Models.Identity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,6 +13,7 @@ using System.Net;
 using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using User.Repository;
 
 namespace IdentityPattern.Controllers
 {

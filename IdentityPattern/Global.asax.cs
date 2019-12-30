@@ -1,6 +1,5 @@
 ﻿using Autofac;
 using Autofac.Integration.Mvc;
-using IdentityPattern.Identity;
 using Microsoft.AspNet.Identity.EntityFramework;
 using RazorGenerator.Mvc;
 using System;
@@ -14,6 +13,7 @@ using System.Web.Optimization;
 using System.Web.Routing;
 using System.Web.WebPages;
 using Microsoft.AspNet.Identity.Owin;
+using User.Repository;
 
 namespace IdentityPattern
 {
