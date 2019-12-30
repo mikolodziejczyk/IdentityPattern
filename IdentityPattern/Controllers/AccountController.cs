@@ -262,12 +262,14 @@ namespace IdentityPattern.Controllers
         }
 
 
+        [Authorize]
         [HttpGet]
         public ActionResult ChangePassword()
         {
             return View(new ChangePasswordVM());
         }
 
+        [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult ChangePassword(ChangePasswordVM model)
@@ -292,6 +294,7 @@ namespace IdentityPattern.Controllers
             }
         }
 
+        [Authorize]
         [HttpGet]
         public ActionResult ChangePasswordConfirmation()
         {
