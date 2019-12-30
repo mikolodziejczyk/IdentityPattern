@@ -301,6 +301,15 @@ namespace IdentityPattern.Controllers
             return View();
         }
 
+        [Authorize]
+        [HttpGet]
+        public ActionResult MyAccount()
+        {
+            string id = User.Identity.GetUserId<string>();
+            ApplicationUser user = userManager.FindById(id);
+            return View(user);
+        }
+
 
         private ActionResult RedirectToLocal(string returnUrl)
         {

@@ -1,0 +1,26 @@
+﻿@model IdentityPattern.Identity.ApplicationUser
+@{
+    ViewBag.Title = "Moje konto";
+}
+
+<div class="container-fluid">
+    <div class="page-header clearfix">
+        <h1>
+            Moje konto
+            <a class="btn btn-default btn-sm mko-back-button pull-right" href="@Url.Action("Index", "Home")"><span class="glyphicon glyphicon-share-alt"></span>&nbsp;Wróć</a>
+        </h1>
+    </div>
+    <form class="-mko-actions-form" method="post">
+        <a class="btn btn-primary" href="@Url.Action("ChangePassword")"><span class="glyphicon glyphicon-lock"></span>&nbsp;Zmień hasło</a>
+    </form>
+    @{
+        var fluidForm = new FluidDisplayForm(1);
+    }
+
+    @fluidForm.BeginForm()
+    @fluidForm.Add("E-mail", Model.Email)
+    @fluidForm.EndForm()
+
+
+    @{Html.RenderPartial("DisplayFormSmallBackButton", Url.Action("Index", "Home"), new ViewDataDictionary() { { "BackText", "Wróć" } });}
+</div>

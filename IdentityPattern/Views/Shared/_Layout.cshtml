@@ -38,11 +38,11 @@
 
                 <ul class="nav navbar-nav navbar-right">
                     <li>
-                        <a class="dropdown-toggle" href="@Url.Action("Details", "User", new { id = 0 /*@currentUser.Id*/ })" data-toggle="dropdown">
+                        <a class="dropdown-toggle" href="#" data-toggle="dropdown">
                             <img class="-mko-current-user-icon" src="@Url.Content("~/dist/mko-resources/images/icons/userprofile.svg")" alt="" />&nbsp;@User.Identity.Name&nbsp;<span class="caret"></span>
                         </a>
                         <ul class="dropdown-menu">
-                            <li><a href="#">Moje konto</a></li>
+                            <li><a href="@Url.Action("MyAccount","Account")">Moje konto</a></li>
                             <li role="separator" class="divider"></li>
                             <li><a href="@Url.Action("ChangePassword","Account")">Zmień hasło</a></li>
                             <li role="separator" class="divider"></li>
