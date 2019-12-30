@@ -262,6 +262,43 @@ namespace IdentityPattern.Controllers
         }
 
 
+        [HttpGet]
+        public ActionResult ChangePassword()
+        {
+            return View(new ChangePasswordVM());
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult ChangePassword(ChangePasswordVM model)
+        {
+            if (ModelState.IsValid)
+            {
+                string userId = User.Identity.GetUserId<string>();
+
+                IdentityResult identityResult = userManager.ChangePassword(userId, model.CurrentPassword, model.NewPassword);
+
+                if (!identityResult.Succeeded)
+                {
+                    ModelState.AddModelError("", identityResult.Errors.First());
+                    return View(model);
+                }
+
+                return RedirectToAction("ChangePasswordConfirmation");
+            }
+            else
+            {
+                return View(model);
+            }
+        }
+
+        [HttpGet]
+        public ActionResult ChangePasswordConfirmation()
+        {
+            return View();
+        }
+
+
         private ActionResult RedirectToLocal(string returnUrl)
         {
             if (Url.IsLocalUrl(returnUrl))

@@ -206,6 +206,7 @@
     <Compile Include="Identity\ApplicationUserManager.cs" />
     <Compile Include="Identity\EmailService.cs" />
     <Compile Include="Identity\Startup.cs" />
+    <Compile Include="Models\Identity\ChangePasswordVM.cs" />
     <Compile Include="Models\Identity\ForgotPasswordVM.cs" />
     <Compile Include="Models\Identity\RegisterVM.cs" />
     <Compile Include="Models\Identity\ResetPasswordVM.cs" />
@@ -305,6 +306,8 @@
     <Content Include="Views\Account\ForgotPasswordConfirmation.cshtml" />
     <Content Include="Views\Account\ResetPassword.cshtml" />
     <Content Include="Views\Account\ResetPasswordConfirmation.cshtml" />
+    <Content Include="Views\Account\ChangePassword.cshtml" />
+    <Content Include="Views\Account\ChangePasswordConfirmation.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

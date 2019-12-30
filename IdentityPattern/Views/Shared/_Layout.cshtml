@@ -44,6 +44,8 @@
                         <ul class="dropdown-menu">
                             <li><a href="#">Moje konto</a></li>
                             <li role="separator" class="divider"></li>
+                            <li><a href="@Url.Action("ChangePassword","Account")">Zmień hasło</a></li>
+                            <li role="separator" class="divider"></li>
                             <li>
                                 <a href="@Url.Action("SignOut", "Account", new { id = 0 /*@currentUser.Id*/ })">
                                     Wyloguj
