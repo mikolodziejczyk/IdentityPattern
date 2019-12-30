@@ -15,12 +15,12 @@
                     <h2>Zaloguj</h2>
                     <div class="form-group">
                         @Html.LabelFor(x => x.UserName)
-                        @Html.TextBoxFor(x => x.UserName, new { @class = "form-control", placeholder = "jan.kowalski@firma.com.pl" })
+                        @Html.TextBoxFor(x => x.UserName, new { @class = "form-control", placeholder = "jan.kowalski@firma.com.pl", maxlength = 200 })
                         @Html.ValidationMessageFor(x => x.UserName)
                     </div>
                     <div class="form-group">
                         @Html.LabelFor(x => x.Password)
-                        @Html.TextBoxFor(x => x.Password, new { @type = "password", @class = "form-control" })
+                        @Html.TextBoxFor(x => x.Password, new { @type = "password", @class = "form-control", maxlength = 100 })
                         @Html.ValidationMessageFor(x => x.Password)
                     </div>
                     <div class="checkbox">
