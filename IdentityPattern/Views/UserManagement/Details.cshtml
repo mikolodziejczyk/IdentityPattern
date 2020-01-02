@@ -1,6 +1,7 @@
 ﻿@model User.Repository.ApplicationUser
 @{
     ViewBag.Title = String.Format("Użytkownik {0}", Model.Email);
+    bool isCurrentUser = Model.UserName == User.Identity.Name;
 }
 
 @section PageHeader
@@ -15,7 +16,20 @@
 
 @* a form with display form actions *@
 <form class="-mko-actions-form" method="post">
-    <button class="btn btn-danger" type="submit" name="operation" value="delete"><span class="glyphicon glyphicon-trash"></span>&nbsp;Usuń</button>
+    @if (!Model.IsApproved)
+    {
+        <button class="btn btn-success" type="submit" name="operation" value="approve"><span class="glyphicon glyphicon-trash"></span>&nbsp;Zaakceptuj</button>
+    }
+
+    @if (Model.IsDisabled)
+    {
+        <button class="btn btn-warning" type="submit" name="operation" value="enable" @(isCurrentUser ? "disabled='disabled'" : "")><span class="glyphicon glyphicon-trash"></span>&nbsp;Odblokuj</button>
+    }
+    else
+    {
+        <button class="btn btn-warning" type="submit" name="operation" value="disable" @(isCurrentUser ? "disabled='disabled'" : "")><span class="glyphicon glyphicon-trash"></span>&nbsp;Zablokuj</button>
+    }
+    <button class="btn btn-danger" type="submit" name="operation" value="delete" @(isCurrentUser ? "disabled='disabled'" : "")><span class="glyphicon glyphicon-trash"></span>&nbsp;Usuń</button>
 </form>
 <div class="-ep-display-section">
     <h2>Dane podstawowe</h2>
@@ -33,7 +47,10 @@
 </div>
 
 <script type="text/javascript">
+    $("form.-mko-actions-form button[value=approve]").click(function () { return confirm("Operacji nie będzie można cofnąć. Czy na pewno chcesz zaakceptować tego użytkownika?"); });
+    $("form.-mko-actions-form button[value=disable]").click(function () { return confirm("Czy na pewno chcesz zablokować tego użytkownika?"); });
+    $("form.-mko-actions-form button[value=enable]").click(function () { return confirm("Czy na pewno chcesz odblokować tego użytkownika?"); });
     $("form.-mko-actions-form button[value=delete]").click(function () { return confirm("@BootstrapTemplates.Resources.MkoResources.ConfirmDelete"); });
 </script>
 
-@{Html.RenderPartial("DisplayFormSmallBackButton", Url.Action("Details"));}
+@{Html.RenderPartial("DisplayFormSmallBackButton", Url.Action("Index"));}

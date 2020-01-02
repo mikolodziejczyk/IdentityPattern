@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
 using User.Repository;
@@ -45,13 +46,13 @@ namespace IdentityPattern.Controllers
         }
 
         [HttpPost]
-        public ActionResult Details(string id, string operation)
+        public async Task<ActionResult> Details(string id, string operation)
         {
             if (operation == "delete")
             {
                 try
                 {
-                    
+                    await userRepository.Delete(id);
                 }
                 catch
                 {
@@ -59,6 +60,33 @@ namespace IdentityPattern.Controllers
                 }
 
                 return RedirectToAction("Index");
+            }
+            if (operation == "disable" || operation == "enable")
+            {
+                try
+                {
+                    bool shouldDisable = operation == "disable";
+                    userRepository.ToggleDisable(id, shouldDisable);
+                }
+                catch
+                {
+                    return View("OperationFailed", Tuple.Create("Nie udało się zaktualizować użytkownika.", Url.Action("Details", new { id = id })));
+                }
+
+                return RedirectToAction("Details", new { id = id });
+            }
+            if (operation == "approve")
+            {
+                try
+                {
+                    userRepository.Approve(id);
+                }
+                catch
+                {
+                    return View("OperationFailed", Tuple.Create("Nie udało się zaakceptować użytkownika.", Url.Action("Details", new { id = id })));
+                }
+
+                return RedirectToAction("Details", new { id = id });
             }
             else
             {
