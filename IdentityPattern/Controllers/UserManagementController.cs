@@ -1,4 +1,5 @@
 ﻿using IdentityPattern.Models.UserManagement;
+using Microsoft.AspNet.Identity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,11 +13,14 @@ namespace IdentityPattern.Controllers
     [Authorize]
     public class UserManagementController : Controller
     {
+        private const string AdminRoleName = "Admin";
         private readonly UserRepository userRepository;
+        private readonly ApplicationUserManager userManager;
 
-        public UserManagementController(UserRepository userRepository)
+        public UserManagementController(UserRepository userRepository, ApplicationUserManager userManager)
         {
             this.userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
+            this.userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
         }
 
         public ActionResult Index(bool? isApproved, bool? isDisabled, string search, int page = 1, string sort = "Email", string sortDir = "ASC")
@@ -92,6 +96,36 @@ namespace IdentityPattern.Controllers
             {
                 return RedirectToAction("Details", new { id = id });
             }
+        }
+
+        [HttpGet]
+        public ActionResult NewAdmin()
+        {
+            return View(new NewAdminMV());
+        }
+
+
+        [HttpPost]
+        [AllowAnonymous]
+        [ValidateAntiForgeryToken]
+        public ActionResult NewAdmin(NewAdminMV model)
+        {
+            ApplicationUser user = new ApplicationUser() { UserName = model.Email, Email = model.Email, IsApproved = true, EmailConfirmed = true };
+            IdentityResult result = userManager.Create(user, model.Password);
+
+            if (result.Succeeded)
+            {
+                user = userManager.FindByName(model.Email);
+                userManager.AddToRole(user.Id, AdminRoleName);
+
+                return RedirectToAction("Details", new { id = user.Id });
+            }
+            else
+            {
+                ModelState.AddModelError("", result.Errors.FirstOrDefault());
+            }
+
+            return View(model);
         }
     }
 }

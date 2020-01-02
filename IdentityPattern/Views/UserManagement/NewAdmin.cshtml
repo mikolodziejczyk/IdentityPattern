@@ -1,0 +1,33 @@
+﻿@model IdentityPattern.Models.UserManagement.NewAdminMV
+
+@{
+    ViewBag.Title = "Nowy administrator";
+    string title = ViewBag.Title;
+    string backLink = Url.Action("Index");
+}
+
+@section PageHeader
+{
+    <div class="page-header clearfix">
+
+        <h1>
+            @title
+            <a class="btn btn-default btn-sm mko-back-button pull-right" href="@backLink"><span class="glyphicon glyphicon-share-alt"></span>&nbsp;@BootstrapTemplates.Resources.MkoResources.BackButtonText</a>
+        </h1>
+    </div>
+}
+
+
+
+    <form class="form-horizontal" method="post">
+        @Html.AntiForgeryToken()
+        @Html.BootstrapEditorFor(x => x.Email, "string", new { CssControlClass = "-mko-control-size-medium" })
+        @Html.BootstrapEditorFor(x => x.Password, "string", new { CssControlClass = "-mko-control-size-medium", htmlAttributes = new { type = "password" } })
+        @Html.BootstrapEditorFor(x => x.ConfirmPassword, "string", new { CssControlClass = "-mko-control-size-medium", htmlAttributes = new { type = "password" } })
+
+        @Html.BootstrapValidationSummary()
+
+        @{Html.RenderPartial("FormActionsBlock", backLink);}
+    </form>
+
+@{Html.RenderPartial("PreventDoubleSubmit", "form.form-horizontal");}
