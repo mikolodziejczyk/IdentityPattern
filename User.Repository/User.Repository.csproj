@@ -78,6 +78,7 @@
     <Compile Include="ApplicationDbContext.cs" />
     <Compile Include="ApplicationSignInManager.cs" />
     <Compile Include="ApplicationUser.cs" />
+    <Compile Include="ApplicationUserExtensions.cs" />
     <Compile Include="ApplicationUserManager.cs" />
     <Compile Include="EmailService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

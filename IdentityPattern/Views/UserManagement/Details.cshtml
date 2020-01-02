@@ -1,4 +1,5 @@
-﻿@model User.Repository.ApplicationUser
+﻿@using User.Repository;
+@model ApplicationUser
 @{
     ViewBag.Title = String.Format("Użytkownik {0}", Model.Email);
     bool isCurrentUser = Model.UserName == User.Identity.Name;
@@ -42,7 +43,7 @@
     @fluidForm.Add("Zaakceptowany", FormatHelpers.BooleanValueString(Model.IsApproved))
     @fluidForm.Add("Zablokowany", FormatHelpers.BooleanValueString(Model.IsDisabled))
     @fluidForm.Add("Identyfikator DAX", Model.CompanyDaxCode)
-    @fluidForm.Add("Role", "TODO")
+    @fluidForm.Add("Role", Model.GetCombinedDisplayRoleNames())
     @fluidForm.EndForm()
 </div>
 

@@ -55,10 +55,15 @@ namespace User.Repository
 
         public ApplicationUser Get(string id)
         {
+            ApplicationUser r;
+
             using (ApplicationDbContext context = new ApplicationDbContext())
             {
-                return context.Users.FirstOrDefault(x => x.Id == id);
+                r = context.Users.FirstOrDefault(x => x.Id == id);
+                r.RoleNames = userManager.GetRoles(id).ToArray();
             }
+
+            return r;
         }
 
         public void Approve(string id)

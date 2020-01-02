@@ -2,6 +2,7 @@
 using Microsoft.AspNet.Identity.EntityFramework;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -14,6 +15,12 @@ namespace User.Repository
         public bool IsApproved { get; set; }
         public bool IsDisabled { get; set; }
         public string CompanyDaxCode { get; set; }
+
+        /// <summary>
+        /// Keeps the role names, requires manual initialization
+        /// </summary>
+        [NotMapped]
+        public string[] RoleNames { get; set; }
 
         public async Task<ClaimsIdentity> GenerateUserIdentityAsync(UserManager<ApplicationUser> manager)
         {
