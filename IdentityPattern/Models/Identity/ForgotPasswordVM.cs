@@ -9,7 +9,7 @@ namespace IdentityPattern.Models.Identity
     public class ForgotPasswordVM
     {
         [Required]
-        [EmailAddress]
+        [RegularExpression(BootstrapTemplates.Helpers.CommonRegex.Mail, ErrorMessageResourceType = typeof(BootstrapTemplates.Resources.MkoResources), ErrorMessageResourceName = "FieldMustBeMail")]
         [Display(Name = "E-mail")]
         [StringLength(200)]
         public string Email { get; set; }

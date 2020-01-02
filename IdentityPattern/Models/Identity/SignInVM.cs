@@ -10,7 +10,7 @@ namespace IdentityPattern.Models.Identity
     {
         [Required]
         [Display(Name = "E-mail")]
-        [EmailAddress]
+        [RegularExpression(BootstrapTemplates.Helpers.CommonRegex.Mail, ErrorMessageResourceType = typeof(BootstrapTemplates.Resources.MkoResources), ErrorMessageResourceName = "FieldMustBeMail")]
         [StringLength(200)]
         public string UserName { get; set; }
 
