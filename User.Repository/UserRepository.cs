@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNet.Identity;
+using Microsoft.AspNet.Identity.EntityFramework;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,6 +19,8 @@ namespace User.Repository
 
         public IEnumerable<ApplicationUser> GetPage(string searchExpression, bool? isApproved, bool? isDisabled, int pageIndex, int pageSize, string sortColumn, string sortDir, out int totalRows)
         {
+            IEnumerable<ApplicationUser> r;
+
             using (ApplicationDbContext context = new ApplicationDbContext())
             {
 
@@ -48,8 +51,20 @@ namespace User.Repository
                     case "CompanyDaxCodeDESC": query = query.OrderByDescending(x => x.CompanyDaxCode); break;
                 }
 
-                return query.Skip(pageIndex * pageSize).Take(pageSize).ToArray();
+                r = query.Skip(pageIndex * pageSize).Take(pageSize).ToArray();
+
+                IdentityRole[] roles = context.Roles.ToArray();
+
+                foreach(ApplicationUser user in r)
+                {
+                    var userRoleIds = user.Roles.Select(x => x.RoleId);
+                    var userRoles = userRoleIds.Select(x => roles.FirstOrDefault(y => y.Id == y.Id)).Where(x => x != null);
+                    user.RoleNames = userRoles.Select(x => x.Name).ToArray();
+                }
+
             }
+
+            return r;
 
         }
 
