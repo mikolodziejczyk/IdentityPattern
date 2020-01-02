@@ -44,5 +44,13 @@ namespace User.Repository
             }
 
         }
+
+        public ApplicationUser Get(string id)
+        {
+            using (ApplicationDbContext context = new ApplicationDbContext())
+            {
+                return context.Users.FirstOrDefault(x => x.Id == id);
+            }
+        }
     }
 }

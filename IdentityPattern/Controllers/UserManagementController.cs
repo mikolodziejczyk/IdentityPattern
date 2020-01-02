@@ -37,5 +37,33 @@ namespace IdentityPattern.Controllers
 
             return View(vm);
         }
+
+        public ActionResult Details(string id)
+        {
+            ApplicationUser applicationUser = userRepository.Get(id);
+            return View(applicationUser);
+        }
+
+        [HttpPost]
+        public ActionResult Details(string id, string operation)
+        {
+            if (operation == "delete")
+            {
+                try
+                {
+                    
+                }
+                catch
+                {
+                    return View("OperationFailed", Tuple.Create("Nie udało się usunąć użytkownika.", Url.Action("Details", new { id = id })));
+                }
+
+                return RedirectToAction("Index");
+            }
+            else
+            {
+                return RedirectToAction("Details", new { id = id });
+            }
+        }
     }
 }

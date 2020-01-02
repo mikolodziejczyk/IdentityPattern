@@ -1,0 +1,39 @@
+﻿@model User.Repository.ApplicationUser
+@{
+    ViewBag.Title = String.Format("Użytkownik {0}", Model.Email);
+}
+
+@section PageHeader
+{
+    <div class="page-header clearfix">
+        <h1>
+            Karta użytkownika <b>@Model.Email</b>
+            <a class="btn btn-default btn-sm mko-back-button pull-right" href="@Url.Action("Index")"><span class="glyphicon glyphicon-share-alt"></span>&nbsp;Wróć</a>
+        </h1>
+    </div>
+}
+
+@* a form with display form actions *@
+<form class="-mko-actions-form" method="post">
+    <button class="btn btn-danger" type="submit" name="operation" value="delete"><span class="glyphicon glyphicon-trash"></span>&nbsp;Usuń</button>
+</form>
+<div class="-ep-display-section">
+    <h2>Dane podstawowe</h2>
+    @{
+        var fluidForm = new FluidDisplayForm(1);
+    }
+
+    @fluidForm.BeginForm()
+    @fluidForm.Add("E-mail", Model.Email)
+    @fluidForm.Add("Zaakceptowany", FormatHelpers.BooleanValueString(Model.IsApproved))
+    @fluidForm.Add("Zablokowany", FormatHelpers.BooleanValueString(Model.IsDisabled))
+    @fluidForm.Add("Identyfikator DAX", Model.CompanyDaxCode)
+    @fluidForm.Add("Role", "TODO")
+    @fluidForm.EndForm()
+</div>
+
+<script type="text/javascript">
+    $("form.-mko-actions-form button[value=delete]").click(function () { return confirm("@BootstrapTemplates.Resources.MkoResources.ConfirmDelete"); });
+</script>
+
+@{Html.RenderPartial("DisplayFormSmallBackButton", Url.Action("Details"));}
