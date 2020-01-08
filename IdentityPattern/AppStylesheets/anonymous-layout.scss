@@ -6,15 +6,16 @@ body.anonymous {
     background-attachment: fixed;
     background-position: bottom right;
     background-repeat: no-repeat;
-    min-height: calc(100vh - #{$app-footer-height});
+    min-height: 100vh;
     margin-bottom: unquote($app-footer-height);
+    position: relative;
 
     div.-app-footer {
-        position: fixed;
+        position: absolute;
         bottom: 0px;
         left: 0px;
         right: 0px;
-        height: 30px;
+        height: $app-footer-height;
         padding: 5px 15px;
         font-size: 12px;
         background-color: #bbb;
