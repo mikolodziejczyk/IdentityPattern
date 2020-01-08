@@ -15,6 +15,7 @@ using System.Web.WebPages;
 using Microsoft.AspNet.Identity.Owin;
 using User.Repository;
 using log4net;
+using Microsoft.AspNet.Identity;
 
 namespace IdentityPattern
 {
@@ -46,6 +47,9 @@ namespace IdentityPattern
             builder.Register<ApplicationUserManager>((c) => HttpContext.Current.GetOwinContext().GetUserManager<ApplicationUserManager>()).ExternallyOwned();
             builder.Register((c) => HttpContext.Current.GetOwinContext().Authentication).ExternallyOwned();
             builder.RegisterType<ApplicationSignInManager>().AsSelf().InstancePerRequest();
+
+            // this registration code isn't used by Owin but for other repositories that have IIdentityMessageService injected
+            builder.RegisterType<EmailService>().As<IIdentityMessageService>();
 
             // here we can add code for ModelBinders etc.
 

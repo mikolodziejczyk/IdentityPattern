@@ -10,11 +10,14 @@ namespace User.Repository
 {
     public class UserRepository
     {
+        private const string UserApprovedTemplateRelativePath = @"Templates/UserApproved.txt";
         private readonly ApplicationUserManager userManager;
+        private readonly TemplateEmailService templateEmailService;
 
-        public UserRepository(ApplicationUserManager userManager)
+        public UserRepository(ApplicationUserManager userManager, TemplateEmailService templateEmailService)
         {
             this.userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
+            this.templateEmailService = templateEmailService ?? throw new ArgumentNullException(nameof(templateEmailService));
         }
 
         public IEnumerable<ApplicationUser> GetPage(string searchExpression, bool? isApproved, bool? isDisabled, int pageIndex, int pageSize, string sortColumn, string sortDir, out int totalRows)
@@ -89,7 +92,7 @@ namespace User.Repository
                 user.IsApproved = true;
                 context.SaveChanges();
 
-                // other steps, like sending an e-mail
+                templateEmailService.SendMail(user.Email, Properties.Settings.Default.UserApprovedEMailTitle, UserApprovedTemplateRelativePath);
             }
         }
 
