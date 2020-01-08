@@ -23,13 +23,15 @@ namespace IdentityPattern.Controllers
         private readonly ApplicationSignInManager signInManager;
         private readonly IAuthenticationManager authenicationManager;
         private readonly CaptchaService captchaService;
+        private readonly TemplateEmailService templateEmailService;
 
-        public AccountController(ApplicationUserManager userManager, ApplicationSignInManager signInManager, IAuthenticationManager authenicationManager, CaptchaService captchaService)
+        public AccountController(ApplicationUserManager userManager, ApplicationSignInManager signInManager, IAuthenticationManager authenicationManager, CaptchaService captchaService, TemplateEmailService templateEmailService)
         {
             this.userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
             this.signInManager = signInManager ?? throw new ArgumentNullException(nameof(signInManager));
             this.authenicationManager = authenicationManager ?? throw new ArgumentNullException(nameof(authenicationManager));
             this.captchaService = captchaService ?? throw new ArgumentNullException(nameof(captchaService));
+            this.templateEmailService = templateEmailService ?? throw new ArgumentNullException(nameof(templateEmailService));
         }
 
 
@@ -119,6 +121,11 @@ namespace IdentityPattern.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult Register(RegisterVM model)
         {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
             captchaService.VerifyCaptcha(this.Request, Properties.Settings.Default.CaptchaSecret);
 
             ApplicationUser user = new ApplicationUser() { UserName = model.Email, Email = model.Email };
@@ -127,16 +134,9 @@ namespace IdentityPattern.Controllers
             if (result.Succeeded)
             {
                 string code = userManager.GenerateEmailConfirmationToken(user.Id);
-
                 var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code = code }, protocol: Request.Url.Scheme);
 
-                string mailContentPath = System.IO.Path.Combine(System.Web.Hosting.HostingEnvironment.ApplicationPhysicalPath, "Templates/ConfirmMailText.txt");
-
-                string mailContent = System.IO.File.ReadAllText(mailContentPath);
-                mailContent = String.Format(mailContent, callbackUrl);
-
-                userManager.SendEmail(user.Id, Properties.Settings.Default.ConfirmMailTitle, mailContent);
-
+                templateEmailService.SendMail(user.Email, Properties.Settings.Default.ConfirmMailTitle, @"Templates\ConfirmMailText.txt", callbackUrl);
                 return RedirectToAction("RegisterConfirm");
             }
             else
@@ -180,33 +180,28 @@ namespace IdentityPattern.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> ForgotPassword(ForgotPasswordVM model)
         {
-            captchaService.VerifyCaptcha(this.Request, Properties.Settings.Default.CaptchaSecret);
-
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                var user = await userManager.FindByNameAsync(model.Email);
-                if (user == null || !(await userManager.IsEmailConfirmedAsync(user.Id)))
-                {
-                    // Don't reveal that the user does not exist or is not confirmed
-                    return View("ForgotPasswordConfirmation");
-                }
-
-                // For more information on how to enable account confirmation and password reset please visit https://go.microsoft.com/fwlink/?LinkID=320771
-                // Send an email with this link
-                string code = await userManager.GeneratePasswordResetTokenAsync(user.Id);
-                var callbackUrl = Url.Action("ResetPassword", "Account", new { userId = user.Id, code = code }, protocol: Request.Url.Scheme);
-
-
-                string mailContentPath = System.IO.Path.Combine(System.Web.Hosting.HostingEnvironment.ApplicationPhysicalPath, "Templates/ResetPasswordText.txt");
-
-                string mailContent = System.IO.File.ReadAllText(mailContentPath);
-                mailContent = String.Format(mailContent, callbackUrl);
-
-                await userManager.SendEmailAsync(user.Id, Properties.Settings.Default.ResetPasswordTitle, mailContent);
-                return RedirectToAction("ForgotPasswordConfirmation");
+                return View(model);
             }
 
-            return View(model);
+            captchaService.VerifyCaptcha(this.Request, Properties.Settings.Default.CaptchaSecret);
+
+            var user = await userManager.FindByNameAsync(model.Email);
+            if (user == null || !(await userManager.IsEmailConfirmedAsync(user.Id)))
+            {
+                // Don't reveal that the user does not exist or is not confirmed
+                return View("ForgotPasswordConfirmation");
+            }
+
+            // Send an email with this link
+            string code = await userManager.GeneratePasswordResetTokenAsync(user.Id);
+            var callbackUrl = Url.Action("ResetPassword", "Account", new { userId = user.Id, code = code }, protocol: Request.Url.Scheme);
+
+            templateEmailService.SendMail(user.Email, Properties.Settings.Default.ResetPasswordTitle, @"Templates\ResetPasswordText.txt", callbackUrl);
+
+            return RedirectToAction("ForgotPasswordConfirmation");
+
         }
 
         [HttpGet]
