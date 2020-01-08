@@ -22,12 +22,14 @@ namespace IdentityPattern.Controllers
         private readonly ApplicationUserManager userManager;
         private readonly ApplicationSignInManager signInManager;
         private readonly IAuthenticationManager authenicationManager;
+        private readonly CaptchaService captchaService;
 
-        public AccountController(ApplicationUserManager userManager, ApplicationSignInManager signInManager, IAuthenticationManager authenicationManager)
+        public AccountController(ApplicationUserManager userManager, ApplicationSignInManager signInManager, IAuthenticationManager authenicationManager, CaptchaService captchaService)
         {
             this.userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
             this.signInManager = signInManager ?? throw new ArgumentNullException(nameof(signInManager));
             this.authenicationManager = authenicationManager ?? throw new ArgumentNullException(nameof(authenicationManager));
+            this.captchaService = captchaService ?? throw new ArgumentNullException(nameof(captchaService));
         }
 
 
@@ -117,7 +119,7 @@ namespace IdentityPattern.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult Register(RegisterVM model)
         {
-            VerifyCaptcha();
+            captchaService.VerifyCaptcha(this.Request, Properties.Settings.Default.CaptchaSecret);
 
             ApplicationUser user = new ApplicationUser() { UserName = model.Email, Email = model.Email };
             IdentityResult result = userManager.Create(user, model.Password);
@@ -178,7 +180,7 @@ namespace IdentityPattern.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> ForgotPassword(ForgotPasswordVM model)
         {
-            VerifyCaptcha();
+            captchaService.VerifyCaptcha(this.Request, Properties.Settings.Default.CaptchaSecret);
 
             if (ModelState.IsValid)
             {
@@ -321,32 +323,6 @@ namespace IdentityPattern.Controllers
         }
 
 
-        private void VerifyCaptcha()
-        {
-            string response = this.Request.Form["g-recaptcha-response"];
 
-            var nvc = new NameValueCollection();
-            nvc.Add("secret", Properties.Settings.Default.CaptchaSecret);
-            nvc.Add("response", response);
-            nvc.Add("remoteip", this.Request.UserHostAddress);
-            byte[] result;
-
-            using (WebClient wc = new WebClient())
-            {
-                result = wc.UploadValues("https://www.google.com/recaptcha/api/siteverify", "POST", nvc);
-            }
-
-            string r = Encoding.UTF8.GetString(result);
-            dynamic ro = JValue.Parse(r);
-            bool success = ro.success.ToObject<bool>();
-
-            if (!success) throw new InvalidOperationException("Invalid captcha");
-
-            string host = ro.hostname.ToObject<string>(); // the host returned by google
-            string actualHost = this.Request.Url.Host;
-            bool matches = host == actualHost;
-
-            if (!matches) throw new InvalidOperationException("Captcha orgin doesn't match.");
-        }
     }
 }
