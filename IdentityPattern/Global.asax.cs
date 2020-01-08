@@ -14,13 +14,23 @@ using System.Web.Routing;
 using System.Web.WebPages;
 using Microsoft.AspNet.Identity.Owin;
 using User.Repository;
+using log4net;
 
 namespace IdentityPattern
 {
     public class MvcApplication : System.Web.HttpApplication
     {
+
+        private static readonly ILog log = LogManager.GetLogger("MvcApplication");
+
+
         protected void Application_Start()
         {
+            string log4NetConfigPath = Server.MapPath("~/Log4NetConfig.xml");
+            log4net.Config.XmlConfigurator.ConfigureAndWatch(new System.IO.FileInfo(log4NetConfigPath));
+
+            log.Debug("Starting the application.");
+
             var builder = new ContainerBuilder();
 
             // Register your MVC controllers. (MvcApplication is the name of
@@ -58,11 +68,22 @@ namespace IdentityPattern
 
         }
 
+        protected void Application_End()
+        {
+            log.Debug("Shutting down the application.");
+        }
+
+
         protected void Application_PostAuthorizeRequest(object sender, EventArgs e)
         {
             System.Threading.Thread.CurrentThread.CurrentUICulture = new System.Globalization.CultureInfo("pl");
             System.Threading.Thread.CurrentThread.CurrentCulture = new System.Globalization.CultureInfo("pl-PL");
         }
 
+
+        void Application_Error(object sender, EventArgs e)
+        {
+            log.Fatal("Application_Error", Server.GetLastError());
+        }
     }
 }
