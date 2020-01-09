@@ -91,9 +91,8 @@ namespace IdentityPattern.Controllers
                 return View(model);
             }
 
-
-
             var result = await signInManager.PasswordSignInAsync(model.UserName, model.Password, isPersistent: model.RememberMe, shouldLockout: true);
+
             switch (result)
             {
                 case SignInStatus.Success:

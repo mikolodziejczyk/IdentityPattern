@@ -34,6 +34,13 @@ namespace IdentityPattern.Tests
         ApplicationUser applicationUser;
         string notExistingUserName = "not_existing@user.somewhere.com";
 
+
+        Mock<HttpContextBase>  contextMock = new Mock<HttpContextBase>();
+        Mock<HttpRequestBase> requestMock = new Mock<HttpRequestBase>();
+        Mock<HttpResponseBase> responseMock = new Mock<HttpResponseBase>();
+        Mock<HttpSessionStateBase> sessionMock = new Mock<HttpSessionStateBase>();
+        Mock<HttpServerUtilityBase> serverMock = new Mock<HttpServerUtilityBase>();
+
         [SetUp]
         public void Setup()
         {
@@ -50,29 +57,23 @@ namespace IdentityPattern.Tests
 
             // setup Controller.Url
 
-            var context = new Mock<HttpContextBase>();
-            var request = new Mock<HttpRequestBase>();
-            var response = new Mock<HttpResponseBase>();
-            var session = new Mock<HttpSessionStateBase>();
-            var server = new Mock<HttpServerUtilityBase>();
+            contextMock.Setup(ctx => ctx.Request).Returns(requestMock.Object);
+            contextMock.Setup(ctx => ctx.Response).Returns(responseMock.Object);
+            contextMock.Setup(ctx => ctx.Session).Returns(sessionMock.Object);
+            contextMock.Setup(ctx => ctx.Server).Returns(serverMock.Object);
 
-            context.Setup(ctx => ctx.Request).Returns(request.Object);
-            context.Setup(ctx => ctx.Response).Returns(response.Object);
-            context.Setup(ctx => ctx.Session).Returns(session.Object);
-            context.Setup(ctx => ctx.Server).Returns(server.Object);
+            requestMock.SetupGet(x => x.ApplicationPath).Returns("/");
+            requestMock.SetupGet(x => x.Url).Returns(new Uri("http://localhost/Account/SignIn", UriKind.Absolute));
+            requestMock.SetupGet(x => x.ServerVariables).Returns(new NameValueCollection());
 
-            request.SetupGet(x => x.ApplicationPath).Returns("/");
-            request.SetupGet(x => x.Url).Returns(new Uri("http://localhost/Account/SignIn", UriKind.Absolute));
-            request.SetupGet(x => x.ServerVariables).Returns(new NameValueCollection());
+            responseMock.Setup(x => x.ApplyAppPathModifier(It.IsAny<string>())).Returns<string>(x => x);
 
-            response.Setup(x => x.ApplyAppPathModifier(It.IsAny<string>())).Returns<string>(x => x);
-
-            context.SetupGet(x => x.Request).Returns(request.Object);
-            context.SetupGet(x => x.Response).Returns(response.Object);
+            contextMock.SetupGet(x => x.Request).Returns(requestMock.Object);
+            contextMock.SetupGet(x => x.Response).Returns(responseMock.Object);
 
             var routes = new RouteCollection();
             RouteConfig.RegisterRoutes(routes);
-            UrlHelper urlHelper = new UrlHelper(new RequestContext(context.Object, new RouteData()), routes);
+            UrlHelper urlHelper = new UrlHelper(new RequestContext(contextMock.Object, new RouteData()), routes);
 
             // end of Controller.Url
 
@@ -230,6 +231,20 @@ namespace IdentityPattern.Tests
             // PasswordSignInAsync has been called exaclty once with the exactly specified parameters
             signInManagerMock.Verify(x => x.PasswordSignInAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<bool>()), Times.Once);
             signInManagerMock.Verify(x => x.PasswordSignInAsync(It.Is<string>((s) => signInModel.UserName == s), It.Is<string>((s) => signInModel.Password == s), It.IsAny<bool>(), It.IsAny<bool>()), Times.Once);
+        }
+
+
+        [Test]
+        public void SignOut_MethodCalled_UserSignedOutAndRedirectedToLoginPage()
+        {
+            requestMock.SetupGet(x => x.Url).Returns(new Uri("http://localhost/Account/SignOut", UriKind.Absolute));
+
+            RedirectToRouteResult result = (RedirectToRouteResult)accountController.SignOut();
+
+            Assert.AreEqual(null, result.RouteValues["Controller"]);
+            Assert.AreEqual("SignIn", result.RouteValues["Action"]);
+
+            authenicationManagerMock.Verify(x => x.SignOut(), Times.Once);
         }
 
 
