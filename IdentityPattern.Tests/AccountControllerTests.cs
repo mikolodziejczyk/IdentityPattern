@@ -33,6 +33,7 @@ namespace IdentityPattern.Tests
         SignInVM signInModel;
         ApplicationUser applicationUser;
         string notExistingUserName = "not_existing@user.somewhere.com";
+        RegisterVM registerModel;
 
 
         Mock<HttpContextBase>  contextMock = new Mock<HttpContextBase>();
@@ -91,6 +92,7 @@ namespace IdentityPattern.Tests
             // signInManager.PasswordSignInAsync() for the specified credentials returns Success
             signInManagerMock.Setup(x => x.PasswordSignInAsync(It.Is<string>((s) => signInModel.UserName == s), It.Is<string>((s) => signInModel.Password == s), It.IsAny<bool>(), It.IsAny<bool>())).Returns(Task.FromResult<SignInStatus>(SignInStatus.Success));
 
+            registerModel = new RegisterVM() { Email = "test@somewhere.com", Password = "Test123!", ConfirmPassword = "Test123!" };
         }
 
         [Test]
@@ -247,6 +249,27 @@ namespace IdentityPattern.Tests
             authenicationManagerMock.Verify(x => x.SignOut(), Times.Once);
         }
 
+        [Test]
+        public void RegisterGET_MethodCalled_ViewReturned()
+        {
+            ViewResult result = (ViewResult)accountController.Register();
+
+            Assert.AreEqual(typeof(RegisterVM), result.Model.GetType());
+            Assert.AreEqual(String.Empty, result.ViewName); // return the view for this method
+        }
+
+        [Test]
+        public void RegisterPOST_ModelStateInvalid_ViewReturned_LoginNotCalled()
+        {
+            accountController.ModelState.AddModelError(nameof(SignInVM.UserName), "Any error message");
+
+            ViewResult result = (ViewResult)accountController.Register(registerModel);
+
+            Assert.AreEqual(registerModel, result.Model);
+            Assert.AreEqual(String.Empty, result.ViewName); // return the view for this method
+
+            applicationUserManagerMock.Verify(x => x.CreateAsync(It.IsAny<ApplicationUser>(), It.IsAny<string>()), Times.Never);
+        }
 
         /// <summary>
         /// Asserts that the specified model error has been set on the whole model.
