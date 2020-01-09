@@ -111,9 +111,12 @@ namespace IdentityPattern.Tests
             // this user does to exist
             signInModel.UserName = notExistingUserName;
 
-            await accountController.SignIn(signInModel, "");
+            ViewResult result = (ViewResult)await accountController.SignIn(signInModel, "");
 
             AssertModelErrorMessage(accountController.ModelState, AccountController.loginFailedMessage);
+
+            Assert.AreEqual(signInModel, result.Model);
+            Assert.AreEqual(String.Empty, result.ViewName); // return the view for this method
 
             applicationUserManagerMock.Verify(x => x.FindByNameAsync(It.Is<string>((s) => signInModel.UserName == s)), Times.Once);
             signInManagerMock.Verify(x => x.PasswordSignInAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<bool>()), Times.Never);
@@ -124,9 +127,12 @@ namespace IdentityPattern.Tests
         {
             applicationUser.EmailConfirmed = false;
 
-            await accountController.SignIn(signInModel, "");
+            ViewResult result = (ViewResult)await accountController.SignIn(signInModel, "");
 
             AssertModelErrorMessage(accountController.ModelState, AccountController.emailNotConfirmedMessage);
+
+            Assert.AreEqual(signInModel, result.Model);
+            Assert.AreEqual(String.Empty, result.ViewName); // return the view for this method
 
             signInManagerMock.Verify(x => x.PasswordSignInAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<bool>()), Times.Never);
         }
@@ -137,9 +143,12 @@ namespace IdentityPattern.Tests
         {
             applicationUser.IsApproved = false;
 
-            await accountController.SignIn(signInModel, "");
+            ViewResult result = (ViewResult)await accountController.SignIn(signInModel, "");
 
             AssertModelErrorMessage(accountController.ModelState, AccountController.accountNotApprovedMessage);
+
+            Assert.AreEqual(signInModel, result.Model);
+            Assert.AreEqual(String.Empty, result.ViewName); // return the view for this method
 
             signInManagerMock.Verify(x => x.PasswordSignInAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<bool>()), Times.Never);
         }
@@ -170,6 +179,59 @@ namespace IdentityPattern.Tests
             signInManagerMock.Verify(x => x.PasswordSignInAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<bool>()), Times.Once);
             signInManagerMock.Verify(x => x.PasswordSignInAsync(It.Is<string>((s) => signInModel.UserName == s), It.Is<string>((s) => signInModel.Password == s), It.IsAny<bool>(), It.IsAny<bool>()), Times.Once);
         }
+
+        [Test]
+        public async Task SignInPOST_LockedUserLogsIn_ExpectedErrorMessageReturned()
+        {
+            signInManagerMock.Setup(x => x.PasswordSignInAsync(It.Is<string>((s) => signInModel.UserName == s), It.Is<string>((s) => signInModel.Password == s), It.IsAny<bool>(), It.IsAny<bool>())).Returns(Task.FromResult<SignInStatus>(SignInStatus.LockedOut));
+
+            ViewResult result = (ViewResult)await accountController.SignIn(signInModel, "/Home/Index");
+
+            AssertModelErrorMessage(accountController.ModelState, AccountController.accountLockedOutMessage);
+
+            Assert.AreEqual(signInModel, result.Model);
+            Assert.AreEqual(String.Empty, result.ViewName); // return the view for this method
+
+            // PasswordSignInAsync has been called exaclty once with the exactly specified parameters
+            signInManagerMock.Verify(x => x.PasswordSignInAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<bool>()), Times.Once);
+            signInManagerMock.Verify(x => x.PasswordSignInAsync(It.Is<string>((s) => signInModel.UserName == s), It.Is<string>((s) => signInModel.Password == s), It.IsAny<bool>(), It.IsAny<bool>()), Times.Once);
+        }
+
+        [Test]
+        public async Task SignInPOST_IncorrectCredentialsSpecified_ExpectedErrorMessageReturned()
+        {
+            signInManagerMock.Setup(x => x.PasswordSignInAsync(It.Is<string>((s) => signInModel.UserName == s), It.Is<string>((s) => signInModel.Password == s), It.IsAny<bool>(), It.IsAny<bool>())).Returns(Task.FromResult<SignInStatus>(SignInStatus.Failure));
+
+            ViewResult result = (ViewResult)await accountController.SignIn(signInModel, "/Home/Index");
+
+            AssertModelErrorMessage(accountController.ModelState, AccountController.loginFailedMessage);
+
+            Assert.AreEqual(signInModel, result.Model);
+            Assert.AreEqual(String.Empty, result.ViewName); // return the view for this method
+
+            // PasswordSignInAsync has been called exaclty once with the exactly specified parameters
+            signInManagerMock.Verify(x => x.PasswordSignInAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<bool>()), Times.Once);
+            signInManagerMock.Verify(x => x.PasswordSignInAsync(It.Is<string>((s) => signInModel.UserName == s), It.Is<string>((s) => signInModel.Password == s), It.IsAny<bool>(), It.IsAny<bool>()), Times.Once);
+        }
+
+
+        [Test]
+        public async Task SignInPOST_UnexpectedReturnValueFromPasswordSignIn_ExpectedErrorMessageReturned()
+        {
+            signInManagerMock.Setup(x => x.PasswordSignInAsync(It.Is<string>((s) => signInModel.UserName == s), It.Is<string>((s) => signInModel.Password == s), It.IsAny<bool>(), It.IsAny<bool>())).Returns(Task.FromResult<SignInStatus>(SignInStatus.RequiresVerification));
+
+            ViewResult result = (ViewResult)await accountController.SignIn(signInModel, "/Home/Index");
+
+            AssertModelErrorMessage(accountController.ModelState, AccountController.loginFailedMessage);
+
+            Assert.AreEqual(signInModel, result.Model);
+            Assert.AreEqual(String.Empty, result.ViewName); // return the view for this method
+
+            // PasswordSignInAsync has been called exaclty once with the exactly specified parameters
+            signInManagerMock.Verify(x => x.PasswordSignInAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<bool>()), Times.Once);
+            signInManagerMock.Verify(x => x.PasswordSignInAsync(It.Is<string>((s) => signInModel.UserName == s), It.Is<string>((s) => signInModel.Password == s), It.IsAny<bool>(), It.IsAny<bool>()), Times.Once);
+        }
+
 
         /// <summary>
         /// Asserts that the specified model error has been set on the whole model.
