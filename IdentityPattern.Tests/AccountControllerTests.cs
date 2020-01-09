@@ -27,6 +27,7 @@ namespace IdentityPattern.Tests
         Mock<TemplateEmailService> templateEmailServiceMock;
 
         SignInVM signInModel;
+        ApplicationUser applicationUser;
 
         [SetUp]
         public void Setup()
@@ -41,16 +42,50 @@ namespace IdentityPattern.Tests
             templateEmailServiceMock = new Mock<TemplateEmailService>(identityMessageServiceMock.Object);
             accountController = new AccountController(applicationUserManagerMock.Object, signInManagerMock.Object, authenicationManagerMock.Object, captchaServiceMock.Object, templateEmailServiceMock.Object);
 
-            signInModel = new SignInVM() { UserName = "test@somewhere.com", Password = "Abc123456" };
+            applicationUser = new ApplicationUser() { Id = Guid.NewGuid().ToString(), UserName = "test@somewhere.com", Email = "test@somewhere.com",  EmailConfirmed = true, IsApproved = true, IsDisabled = false };
+            signInModel = new SignInVM() { UserName = applicationUser.UserName, Password =  "Test123!"};
         }
 
         [Test]
-        public async Task SignInPOST_UserDoesNotExist_ExpectedModelErrorMessageSet()
+        public async Task SignInPOST_ModelStateInvalid_ViewReturned_LoginNotCalled()
         {
+            accountController.ModelState.AddModelError(nameof(SignInVM.UserName), "Any error message");
+
+            ViewResult result = (ViewResult)await accountController.SignIn(signInModel, "");
+
+            Assert.AreEqual(signInModel, result.Model);
+            Assert.AreEqual(String.Empty, result.ViewName); // return the view for this method
+
+            signInManagerMock.Verify(x => x.PasswordSignInAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<bool>()), Times.Never);
+        }
+
+        [Test]
+        public async Task SignInPOST_UserDoesNotExist_ExpectedModelErrorMessageSet_UserSearchedFor_LoginNotCalled()
+        {
+            applicationUserManagerMock.Setup(x => x.FindByNameAsync(It.Is<string>((s) => signInModel.UserName == s))).Returns(Task.FromResult<ApplicationUser>(null));
+
             await accountController.SignIn(signInModel, "");
 
             AssertModelErrorMessage(accountController.ModelState, AccountController.loginFailedMessage);
+
+            applicationUserManagerMock.Verify(x => x.FindByNameAsync(It.Is<string>((s) => signInModel.UserName == s)), Times.Once);
+            signInManagerMock.Verify(x => x.PasswordSignInAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<bool>()), Times.Never);
         }
+
+        [Test]
+        public async Task SignInPOST_UserEmailNotConfirmed_ExpectedModelErrorMessageSet_LoginNotCalled()
+        {
+            applicationUser.EmailConfirmed = false;
+            
+            applicationUserManagerMock.Setup(x => x.FindByNameAsync(It.Is<string>((s) => signInModel.UserName == s))).Returns(Task.FromResult<ApplicationUser>(applicationUser));
+
+            await accountController.SignIn(signInModel, "");
+
+            AssertModelErrorMessage(accountController.ModelState, AccountController.emailNotConfirmedMessage);
+
+            signInManagerMock.Verify(x => x.PasswordSignInAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<bool>()), Times.Never);
+        }
+
 
         private void AssertModelErrorMessage(ModelStateDictionary modelState, string expectedErrorMessage)
         {

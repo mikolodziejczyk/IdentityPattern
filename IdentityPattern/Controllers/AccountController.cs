@@ -26,6 +26,10 @@ namespace IdentityPattern.Controllers
         private readonly TemplateEmailService templateEmailService;
 
         internal static readonly string loginFailedMessage = "Nie udało się zalogować.";
+        internal static readonly string emailNotConfirmedMessage = "Nie potwierdziłeś adresu e-mail. Na podany adres otrzymałeś wiadomość e-mail z łączem do potwierdzenia adresu.";
+        internal static readonly string accountNotApprovedMessage = "Twoje konto nie zostało jeszcze zaakceptowane przez administratora.";
+        internal static readonly string accountDisabledMessage = "Twoje konto zostało zablokowane. Nie możesz się zalogować.";
+        internal static readonly string accountLockedOutMessage = "Twoje konto zostało tymczasowo zablokowane. Spróbuj później.";
 
         public AccountController(ApplicationUserManager userManager, ApplicationSignInManager signInManager, IAuthenticationManager authenicationManager, CaptchaService captchaService, TemplateEmailService templateEmailService)
         {
@@ -59,7 +63,7 @@ namespace IdentityPattern.Controllers
 
             if (user == null)
             {
-                ModelState.AddModelError("", loginFailedMessage);
+                ModelState.AddModelError(String.Empty, loginFailedMessage);
                 return View(model);
             }
 
@@ -71,19 +75,19 @@ namespace IdentityPattern.Controllers
 
             if (!user.EmailConfirmed)
             {
-                ModelState.AddModelError("", "Nie potwierdziłeś adresu e-mail. Na podany adres otrzymałeś wiadomość e-mail z łączem do potwierdzenia adresu.");
+                ModelState.AddModelError(String.Empty, emailNotConfirmedMessage);
                 return View(model);
             }
 
             if (!user.IsApproved)
             {
-                ModelState.AddModelError("", "Twoje konto nie zostało jeszcze zaakceptowane przez administratora.");
+                ModelState.AddModelError(String.Empty, accountNotApprovedMessage);
                 return View(model);
             }
 
             if (user.IsDisabled)
             {
-                ModelState.AddModelError("", "Twoje konto zostało zablokowane nie możesz się zalogować..");
+                ModelState.AddModelError(String.Empty, accountDisabledMessage);
                 return View(model);
             }
 
@@ -95,11 +99,11 @@ namespace IdentityPattern.Controllers
                 case SignInStatus.Success:
                     return RedirectToLocal(returnUrl);
                 case SignInStatus.LockedOut:
-                    ModelState.AddModelError("", "Twoje konto zostało tymczasowo zablokowane. Spróbuj później.");
+                    ModelState.AddModelError(String.Empty, accountLockedOutMessage);
                     return View(model);
                 case SignInStatus.Failure:
                 default:
-                    ModelState.AddModelError("", "Nie udało się zalogować.");
+                    ModelState.AddModelError(String.Empty, loginFailedMessage);
                     return View(model);
             }
         }
