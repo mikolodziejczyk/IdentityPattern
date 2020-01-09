@@ -25,6 +25,8 @@ namespace IdentityPattern.Controllers
         private readonly CaptchaService captchaService;
         private readonly TemplateEmailService templateEmailService;
 
+        internal static readonly string loginFailedMessage = "Nie udało się zalogować.";
+
         public AccountController(ApplicationUserManager userManager, ApplicationSignInManager signInManager, IAuthenticationManager authenicationManager, CaptchaService captchaService, TemplateEmailService templateEmailService)
         {
             this.userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
@@ -57,7 +59,7 @@ namespace IdentityPattern.Controllers
 
             if (user == null)
             {
-                ModelState.AddModelError("", "Nie udało się zalogować.");
+                ModelState.AddModelError("", loginFailedMessage);
                 return View(model);
             }
 
