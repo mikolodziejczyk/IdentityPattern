@@ -32,7 +32,7 @@ namespace IdentityPattern.Tests
 
         SignInVM signInModel;
         ApplicationUser applicationUser;
-        string notExistingUserName = "not_existing@user.somewhere.com";
+        string nonExistingUserName = "not_existing@user.somewhere.com";
         RegisterVM registerModel;
         string confirmationCode = "abcd12345";
         ForgotPasswordVM forgotPasswordVM;
@@ -95,7 +95,7 @@ namespace IdentityPattern.Tests
             applicationUserManagerMock.Setup(x => x.FindByNameAsync(signInModel.UserName)).Returns(Task.FromResult<ApplicationUser>(applicationUser));
 
             // applicationUserManager.FindByNameAsync() for notExistingUserName returns null
-            applicationUserManagerMock.Setup(x => x.FindByNameAsync(notExistingUserName)).Returns(Task.FromResult<ApplicationUser>(null));
+            applicationUserManagerMock.Setup(x => x.FindByNameAsync(nonExistingUserName)).Returns(Task.FromResult<ApplicationUser>(null));
 
             // applicationUserManagerMock.CreateAsync by default returns success
             applicationUserManagerMock.Setup(x => x.CreateAsync(It.IsAny<ApplicationUser>(), It.IsAny<string>())).Returns(Task.FromResult<IdentityResult>(IdentityResult.Success));
@@ -106,9 +106,12 @@ namespace IdentityPattern.Tests
             // signInManager.PasswordSignInAsync() for the specified credentials returns Success
             signInManagerMock.Setup(x => x.PasswordSignInAsync(signInModel.UserName, signInModel.Password, It.IsAny<bool>(), It.IsAny<bool>())).Returns(Task.FromResult<SignInStatus>(SignInStatus.Success));
 
-            registerModel = new RegisterVM() { Email = "test@somewhere.com", Password = "Test123!", ConfirmPassword = "Test123!" };
+            registerModel = new RegisterVM() { Email = applicationUser.Email, Password = "Test123!", ConfirmPassword = "Test123!" };
 
-            forgotPasswordVM = new ForgotPasswordVM() { Email = "test@somewhere.com" };
+            forgotPasswordVM = new ForgotPasswordVM() { Email = applicationUser.Email };
+
+            // applicationUserManagerMock.GenerateEmailConfirmationTokenAsync by default returns success
+            applicationUserManagerMock.Setup(x => x.GeneratePasswordResetTokenAsync(It.IsAny<string>())).Returns(Task.FromResult<string>(confirmationCode));
         }
 
         [Test]
@@ -128,7 +131,7 @@ namespace IdentityPattern.Tests
         public async Task SignInPOST_UserDoesNotExist_ExpectedModelErrorMessageSet_UserSearchedFor_LoginNotCalled()
         {
             // this user does to exist
-            signInModel.UserName = notExistingUserName;
+            signInModel.UserName = nonExistingUserName;
 
             ViewResult result = (ViewResult)await accountController.SignIn(signInModel, "");
 
@@ -475,6 +478,52 @@ namespace IdentityPattern.Tests
                 );
 
             captchaServiceMock.Verify(x => x.VerifyCaptcha(this.accountController.Request, It.IsAny<string>(), It.IsAny<string>()), Times.Once);
+        }
+
+        [Test]
+        public async Task ForgotPasswordPOST_NonExistingUserSpecified_ForgotPasswordConfirmationReturned()
+        {
+            forgotPasswordVM.Email = nonExistingUserName;
+
+            ViewResult result = (ViewResult)await accountController.ForgotPassword(forgotPasswordVM);
+
+            Assert.AreEqual("ForgotPasswordConfirmation", result.ViewName); // return the view for this method
+        }
+
+        [Test]
+        public async Task ForgotPasswordPOST_UserWithoutConfirmedMail_ForgotPasswordConfirmationReturned()
+        {
+            applicationUser.EmailConfirmed = false;
+
+            ViewResult result = (ViewResult)await accountController.ForgotPassword(forgotPasswordVM);
+
+            Assert.AreEqual("ForgotPasswordConfirmation", result.ViewName); // return the view for this method
+        }
+
+        [Test]
+        public async Task ForgotPasswordPOST_UserSpecifiedCorrectData_ResetPasswordMailHasBeenGenerated()
+        {
+            applicationUser.EmailConfirmed = true;
+            await accountController.ForgotPassword(forgotPasswordVM);
+
+            string expectedCallbackUrl = accountController.GeneratePasswordResetUrl(applicationUser.Id, confirmationCode);
+
+            applicationUserManagerMock.Verify(x => x.GeneratePasswordResetTokenAsync(applicationUser.Id), Times.Once);
+            templateEmailServiceMock.Verify(x => x.SendMail(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string[]>()), Times.Once);
+            templateEmailServiceMock.Verify(x => x.SendMail(applicationUser.Email, IdentityPattern.Properties.Settings.Default.ResetPasswordTitle,
+                AccountController.ResetPasswordMailTemplateFileRelativePath, It.Is<string[]>((args) => args[0] == expectedCallbackUrl)), Times.Once);
+        }
+
+        [Test]
+        public async Task ForgotPasswordPOST_UserSpecifiedCorrectData_UserRedirectedToForgotPasswordConfirmation()
+        {
+            requestMock.SetupGet(x => x.Url).Returns(new Uri("http://localhost/Account/ForgotPassword", UriKind.Absolute));
+
+            applicationUser.EmailConfirmed = true;
+            RedirectToRouteResult result = (RedirectToRouteResult)await accountController.ForgotPassword(forgotPasswordVM);
+
+            Assert.AreEqual(null, result.RouteValues["Controller"]);
+            Assert.AreEqual("ForgotPasswordConfirmation", result.RouteValues["Action"]);
         }
 
         /// <summary>

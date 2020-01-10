@@ -32,7 +32,7 @@ namespace IdentityPattern.Controllers
         internal static readonly string accountLockedOutMessage = "Twoje konto zostało tymczasowo zablokowane. Spróbuj później.";
 
         internal const string ConfirmUserMailTemplateFileRelativePath = @"Templates\ConfirmMailText.txt";
-        private const string ResetPasswordMailTemplateFileRelativePath = @"Templates\ResetPasswordText.txt";
+        internal const string ResetPasswordMailTemplateFileRelativePath = @"Templates\ResetPasswordText.txt";
 
         public AccountController(ApplicationUserManager userManager, ApplicationSignInManager signInManager, IAuthenticationManager authenicationManager, CaptchaService captchaService, TemplateEmailService templateEmailService)
         {
@@ -206,7 +206,7 @@ namespace IdentityPattern.Controllers
             captchaService.VerifyCaptcha(this.Request, Properties.Settings.Default.CaptchaSecret);
 
             var user = await userManager.FindByNameAsync(model.Email);
-            if (user == null || !(await userManager.IsEmailConfirmedAsync(user.Id)))
+            if (user == null || user.EmailConfirmed == false)
             {
                 // Don't reveal that the user does not exist or is not confirmed
                 return View("ForgotPasswordConfirmation");
@@ -222,7 +222,7 @@ namespace IdentityPattern.Controllers
 
         }
 
-        private string GeneratePasswordResetUrl(string userId, string code)
+        internal string GeneratePasswordResetUrl(string userId, string code)
         {
             return Url.Action("ResetPassword", "Account", new { userId = userId, code = code }, protocol: Request.Url.Scheme);
         }
