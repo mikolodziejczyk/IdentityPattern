@@ -31,6 +31,8 @@ namespace IdentityPattern.Controllers
         internal static readonly string accountDisabledMessage = "Twoje konto zostało zablokowane. Nie możesz się zalogować.";
         internal static readonly string accountLockedOutMessage = "Twoje konto zostało tymczasowo zablokowane. Spróbuj później.";
 
+        internal const string ConfirmUserMailTemplateFileRelativePath = @"Templates\ConfirmMailText.txt";
+
         public AccountController(ApplicationUserManager userManager, ApplicationSignInManager signInManager, IAuthenticationManager authenicationManager, CaptchaService captchaService, TemplateEmailService templateEmailService)
         {
             this.userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
@@ -139,9 +141,9 @@ namespace IdentityPattern.Controllers
             if (result.Succeeded)
             {
                 string code = userManager.GenerateEmailConfirmationToken(user.Id);
-                var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code = code }, protocol: Request.Url.Scheme);
+                string callbackUrl = GenerateConfirmationCallbackUrl(user.Id, code);
 
-                templateEmailService.SendMail(user.Email, Properties.Settings.Default.ConfirmMailTitle, @"Templates\ConfirmMailText.txt", callbackUrl);
+                templateEmailService.SendMail(user.Email, Properties.Settings.Default.ConfirmMailTitle, ConfirmUserMailTemplateFileRelativePath, callbackUrl);
                 return RedirectToAction("RegisterConfirm");
             }
             else
@@ -152,6 +154,16 @@ namespace IdentityPattern.Controllers
             return View(model);
         }
 
+        /// <summary>
+        /// Generates a link to confirm the created account. Extracted as a separate method to facilitate testing.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="code"></param>
+        /// <returns>The url to confirm the account.</returns>
+        internal string GenerateConfirmationCallbackUrl(string id, string code)
+        {
+            return Url.Action("ConfirmEmail", "Account", new { userId = id, code = code }, protocol: Request.Url.Scheme);
+        }
 
         [HttpGet]
         [AllowAnonymous]

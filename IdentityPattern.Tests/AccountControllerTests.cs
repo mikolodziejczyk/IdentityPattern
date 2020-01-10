@@ -100,11 +100,11 @@ namespace IdentityPattern.Tests
             // applicationUserManagerMock.CreateAsync by default returns success
             applicationUserManagerMock.Setup(x => x.CreateAsync(It.IsAny<ApplicationUser>(), It.IsAny<string>())).Returns(Task.FromResult<IdentityResult>(IdentityResult.Success));
 
-            // applicationUserManagerMock.CreateAsync by default returns success
+            // applicationUserManagerMock.GenerateEmailConfirmationTokenAsync by default returns success
             applicationUserManagerMock.Setup(x => x.GenerateEmailConfirmationTokenAsync(It.IsAny<string>())).Returns(Task.FromResult<string>(confirmationCode));
 
             // signInManager.PasswordSignInAsync() for the specified credentials returns Success
-            signInManagerMock.Setup(x => x.PasswordSignInAsync(signInModel.UserName, signInModel.Password , It.IsAny<bool>(), It.IsAny<bool>())).Returns(Task.FromResult<SignInStatus>(SignInStatus.Success));
+            signInManagerMock.Setup(x => x.PasswordSignInAsync(signInModel.UserName, signInModel.Password, It.IsAny<bool>(), It.IsAny<bool>())).Returns(Task.FromResult<SignInStatus>(SignInStatus.Success));
 
             registerModel = new RegisterVM() { Email = "test@somewhere.com", Password = "Test123!", ConfirmPassword = "Test123!" };
         }
@@ -180,7 +180,7 @@ namespace IdentityPattern.Tests
 
             // PasswordSignInAsync has been called exaclty once with the exactly specified parameters
             signInManagerMock.Verify(x => x.PasswordSignInAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<bool>()), Times.Once);
-            signInManagerMock.Verify(x => x.PasswordSignInAsync(signInModel.UserName, signInModel.Password , It.IsAny<bool>(), It.IsAny<bool>()), Times.Once);
+            signInManagerMock.Verify(x => x.PasswordSignInAsync(signInModel.UserName, signInModel.Password, It.IsAny<bool>(), It.IsAny<bool>()), Times.Once);
         }
 
         [Test]
@@ -205,7 +205,7 @@ namespace IdentityPattern.Tests
 
             // PasswordSignInAsync has been called exaclty once with the exactly specified parameters
             signInManagerMock.Verify(x => x.PasswordSignInAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<bool>()), Times.Once);
-            signInManagerMock.Verify(x => x.PasswordSignInAsync(signInModel.UserName, signInModel.Password , It.IsAny<bool>(), It.IsAny<bool>()), Times.Once);
+            signInManagerMock.Verify(x => x.PasswordSignInAsync(signInModel.UserName, signInModel.Password, It.IsAny<bool>(), It.IsAny<bool>()), Times.Once);
         }
 
         [Test]
@@ -219,13 +219,13 @@ namespace IdentityPattern.Tests
 
             // PasswordSignInAsync has been called exaclty once with the exactly specified parameters
             signInManagerMock.Verify(x => x.PasswordSignInAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<bool>()), Times.Once);
-            signInManagerMock.Verify(x => x.PasswordSignInAsync(signInModel.UserName, signInModel.Password , It.IsAny<bool>(), It.IsAny<bool>()), Times.Once);
+            signInManagerMock.Verify(x => x.PasswordSignInAsync(signInModel.UserName, signInModel.Password, It.IsAny<bool>(), It.IsAny<bool>()), Times.Once);
         }
 
         [Test]
         public async Task SignInPOST_LockedUserLogsIn_ExpectedErrorMessageReturned()
         {
-            signInManagerMock.Setup(x => x.PasswordSignInAsync(signInModel.UserName, signInModel.Password , It.IsAny<bool>(), It.IsAny<bool>())).Returns(Task.FromResult<SignInStatus>(SignInStatus.LockedOut));
+            signInManagerMock.Setup(x => x.PasswordSignInAsync(signInModel.UserName, signInModel.Password, It.IsAny<bool>(), It.IsAny<bool>())).Returns(Task.FromResult<SignInStatus>(SignInStatus.LockedOut));
 
             ViewResult result = (ViewResult)await accountController.SignIn(signInModel, "/Home/Index");
 
@@ -236,13 +236,13 @@ namespace IdentityPattern.Tests
 
             // PasswordSignInAsync has been called exaclty once with the exactly specified parameters
             signInManagerMock.Verify(x => x.PasswordSignInAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<bool>()), Times.Once);
-            signInManagerMock.Verify(x => x.PasswordSignInAsync(signInModel.UserName, signInModel.Password , It.IsAny<bool>(), It.IsAny<bool>()), Times.Once);
+            signInManagerMock.Verify(x => x.PasswordSignInAsync(signInModel.UserName, signInModel.Password, It.IsAny<bool>(), It.IsAny<bool>()), Times.Once);
         }
 
         [Test]
         public async Task SignInPOST_IncorrectCredentialsSpecified_ExpectedErrorMessageReturned()
         {
-            signInManagerMock.Setup(x => x.PasswordSignInAsync(signInModel.UserName, signInModel.Password , It.IsAny<bool>(), It.IsAny<bool>())).Returns(Task.FromResult<SignInStatus>(SignInStatus.Failure));
+            signInManagerMock.Setup(x => x.PasswordSignInAsync(signInModel.UserName, signInModel.Password, It.IsAny<bool>(), It.IsAny<bool>())).Returns(Task.FromResult<SignInStatus>(SignInStatus.Failure));
 
             ViewResult result = (ViewResult)await accountController.SignIn(signInModel, "/Home/Index");
 
@@ -253,14 +253,14 @@ namespace IdentityPattern.Tests
 
             // PasswordSignInAsync has been called exaclty once with the exactly specified parameters
             signInManagerMock.Verify(x => x.PasswordSignInAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<bool>()), Times.Once);
-            signInManagerMock.Verify(x => x.PasswordSignInAsync(signInModel.UserName, signInModel.Password , It.IsAny<bool>(), It.IsAny<bool>()), Times.Once);
+            signInManagerMock.Verify(x => x.PasswordSignInAsync(signInModel.UserName, signInModel.Password, It.IsAny<bool>(), It.IsAny<bool>()), Times.Once);
         }
 
 
         [Test]
         public async Task SignInPOST_UnexpectedReturnValueFromPasswordSignIn_ExpectedErrorMessageReturned()
         {
-            signInManagerMock.Setup(x => x.PasswordSignInAsync(signInModel.UserName, signInModel.Password , It.IsAny<bool>(), It.IsAny<bool>())).Returns(Task.FromResult<SignInStatus>(SignInStatus.RequiresVerification));
+            signInManagerMock.Setup(x => x.PasswordSignInAsync(signInModel.UserName, signInModel.Password, It.IsAny<bool>(), It.IsAny<bool>())).Returns(Task.FromResult<SignInStatus>(SignInStatus.RequiresVerification));
 
             ViewResult result = (ViewResult)await accountController.SignIn(signInModel, "/Home/Index");
 
@@ -271,7 +271,7 @@ namespace IdentityPattern.Tests
 
             // PasswordSignInAsync has been called exaclty once with the exactly specified parameters
             signInManagerMock.Verify(x => x.PasswordSignInAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<bool>()), Times.Once);
-            signInManagerMock.Verify(x => x.PasswordSignInAsync(signInModel.UserName, signInModel.Password , It.IsAny<bool>(), It.IsAny<bool>()), Times.Once);
+            signInManagerMock.Verify(x => x.PasswordSignInAsync(signInModel.UserName, signInModel.Password, It.IsAny<bool>(), It.IsAny<bool>()), Times.Once);
         }
 
 
@@ -316,6 +316,83 @@ namespace IdentityPattern.Tests
             accountController.Register(registerModel);
 
             captchaServiceMock.Verify(x => x.VerifyCaptcha(this.accountController.Request, It.IsAny<string>(), It.IsAny<string>()), Times.Once);
+        }
+
+        [Test]
+        public void RegisterPOST_UserTriesToRegisterWithIncorrectCaptcha_MethodThrowsAnException()
+        {
+            captchaServiceMock.Setup(x => x.VerifyCaptcha(It.IsAny<HttpRequestBase>(), It.IsAny<string>(), It.IsAny<string>())).Throws(new InvalidOperationException());
+
+            Assert.Throws<InvalidOperationException>(
+                () => { accountController.Register(registerModel); }
+                );
+
+            captchaServiceMock.Verify(x => x.VerifyCaptcha(this.accountController.Request, It.IsAny<string>(), It.IsAny<string>()), Times.Once);
+        }
+
+        [Test]
+        public void RegisterPOST_UserSpecifiesWrongData_ExpectedModelErrorMessageSet()
+        {
+            // we are testing the path when applicationUserManagerMock.Create() returns an error
+
+            string errorMessageFromCreate = "An error message from create";
+            applicationUserManagerMock.Setup(x => x.CreateAsync(It.IsAny<ApplicationUser>(), It.IsAny<string>())).Returns(Task.FromResult<IdentityResult>(new IdentityResult(errorMessageFromCreate)));
+
+            ViewResult result = (ViewResult)accountController.Register(registerModel);
+
+            AssertModelErrorMessage(accountController.ModelState, errorMessageFromCreate);
+
+            Assert.AreEqual(registerModel, result.Model);
+            Assert.AreEqual(String.Empty, result.ViewName); // return the view for this method
+        }
+
+
+        [Test]
+        public void RegisterPOST_UserSpecifieCorrectDate_RegisterCalledWithExpectedParameters()
+        {
+            ApplicationUser receivedApplicationUser = null;
+            string receivedPassword = null;
+
+            applicationUserManagerMock.Setup(x => x.CreateAsync(It.IsAny<ApplicationUser>(), It.IsAny<string>()))
+                .Returns(Task.FromResult<IdentityResult>(IdentityResult.Success))
+                .Callback((ApplicationUser applicationUser, string password) => { receivedApplicationUser = applicationUser; receivedPassword = password; });
+
+            ActionResult result = (ActionResult)accountController.Register(registerModel);
+
+            Assert.AreEqual(registerModel.Email, receivedApplicationUser.Email);
+            Assert.AreEqual(registerModel.Password, receivedPassword);
+        }
+
+        [Test]
+        public void RegisterPOST_UserSpecifieCorrectDate_ConfirmationMailHasBeenGenerated()
+        {
+            ApplicationUser receivedApplicationUser = null;
+            string receivedPassword = null;
+
+            applicationUserManagerMock.Setup(x => x.CreateAsync(It.IsAny<ApplicationUser>(), It.IsAny<string>()))
+                .Returns(Task.FromResult<IdentityResult>(IdentityResult.Success))
+                .Callback((ApplicationUser applicationUser, string password) => { applicationUser.Id = Guid.NewGuid().ToString(); receivedApplicationUser = applicationUser; receivedPassword = password; });
+
+            ActionResult result = (ActionResult)accountController.Register(registerModel);
+
+            string expectedCallbackUrl = accountController.GenerateConfirmationCallbackUrl(receivedApplicationUser.Id, confirmationCode);
+
+            applicationUserManagerMock.Verify(x => x.GenerateEmailConfirmationTokenAsync(receivedApplicationUser.Id), Times.Once);
+            templateEmailServiceMock.Verify(x => x.SendMail(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string[]>()), Times.Once);
+
+            templateEmailServiceMock.Verify(x => x.SendMail(receivedApplicationUser.Email, IdentityPattern.Properties.Settings.Default.ConfirmMailTitle,
+                AccountController.ConfirmUserMailTemplateFileRelativePath, It.Is<string[]>((args) => args[0] == expectedCallbackUrl)), Times.Once);
+        }
+
+        [Test]
+        public void RegisterPOST__RegistrationCorrect_UserRedirectedToConfirmPage()
+        {
+            requestMock.SetupGet(x => x.Url).Returns(new Uri("http://localhost/Account/Register", UriKind.Absolute));
+
+            RedirectToRouteResult result = (RedirectToRouteResult)accountController.Register(registerModel);
+
+            Assert.AreEqual(null, result.RouteValues["Controller"]);
+            Assert.AreEqual("RegisterConfirm", result.RouteValues["Action"]);
         }
 
         /// <summary>
