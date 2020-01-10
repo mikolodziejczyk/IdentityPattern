@@ -95,7 +95,7 @@ namespace IdentityPattern.Tests
             applicationUserManagerMock.Setup(x => x.FindByNameAsync(signInModel.UserName)).Returns(Task.FromResult<ApplicationUser>(applicationUser));
 
             // applicationUserManager.FindByNameAsync() for notExistingUserName returns null
-            applicationUserManagerMock.Setup(x => x.FindByNameAsync(It.Is<string>((s) => notExistingUserName == s))).Returns(Task.FromResult<ApplicationUser>(null));
+            applicationUserManagerMock.Setup(x => x.FindByNameAsync(notExistingUserName)).Returns(Task.FromResult<ApplicationUser>(null));
 
             // applicationUserManagerMock.CreateAsync by default returns success
             applicationUserManagerMock.Setup(x => x.CreateAsync(It.IsAny<ApplicationUser>(), It.IsAny<string>())).Returns(Task.FromResult<IdentityResult>(IdentityResult.Success));
