@@ -33,6 +33,7 @@ namespace IdentityPattern.Tests
         SignInVM signInModel;
         ApplicationUser applicationUser;
         string notExistingUserName = "not_existing@user.somewhere.com";
+        string confirmationCode = "abcd12345";
         RegisterVM registerModel;
 
 
@@ -85,6 +86,7 @@ namespace IdentityPattern.Tests
             #endregion Controller.Url
 
             accountController.Url = urlHelper;
+            accountController.ControllerContext = new ControllerContext(contextMock.Object, new RouteData(), accountController);
 
             applicationUser = new ApplicationUser() { Id = Guid.NewGuid().ToString(), UserName = "test@somewhere.com", Email = "test@somewhere.com", EmailConfirmed = true, IsApproved = true, IsDisabled = false };
             signInModel = new SignInVM() { UserName = applicationUser.UserName, Password = "Test123!" };
@@ -94,6 +96,12 @@ namespace IdentityPattern.Tests
 
             // applicationUserManager.FindByNameAsync() for notExistingUserName returns null
             applicationUserManagerMock.Setup(x => x.FindByNameAsync(It.Is<string>((s) => notExistingUserName == s))).Returns(Task.FromResult<ApplicationUser>(null));
+
+            // applicationUserManagerMock.CreateAsync by default returns success
+            applicationUserManagerMock.Setup(x => x.CreateAsync(It.IsAny<ApplicationUser>(), It.IsAny<string>())).Returns(Task.FromResult<IdentityResult>(IdentityResult.Success));
+
+            // applicationUserManagerMock.CreateAsync by default returns success
+            applicationUserManagerMock.Setup(x => x.GenerateEmailConfirmationTokenAsync(It.IsAny<string>())).Returns(Task.FromResult<string>(confirmationCode));
 
             // signInManager.PasswordSignInAsync() for the specified credentials returns Success
             signInManagerMock.Setup(x => x.PasswordSignInAsync(signInModel.UserName, signInModel.Password , It.IsAny<bool>(), It.IsAny<bool>())).Returns(Task.FromResult<SignInStatus>(SignInStatus.Success));
@@ -290,7 +298,7 @@ namespace IdentityPattern.Tests
         }
 
         [Test]
-        public void RegisterPOST_ModelStateInvalid_ViewReturned_LoginNotCalled()
+        public void RegisterPOST_ModelStateInvalid_ViewReturned_UserManagerCreateNotCalled()
         {
             accountController.ModelState.AddModelError(nameof(SignInVM.UserName), "Any error message");
 
@@ -300,6 +308,14 @@ namespace IdentityPattern.Tests
             Assert.AreEqual(String.Empty, result.ViewName); // return the view for this method
 
             applicationUserManagerMock.Verify(x => x.CreateAsync(It.IsAny<ApplicationUser>(), It.IsAny<string>()), Times.Never);
+        }
+
+        [Test]
+        public void RegisterPOST_UserTriesToRegister_CaptchaVerified()
+        {
+            accountController.Register(registerModel);
+
+            captchaServiceMock.Verify(x => x.VerifyCaptcha(this.accountController.Request, It.IsAny<string>(), It.IsAny<string>()), Times.Once);
         }
 
         /// <summary>
