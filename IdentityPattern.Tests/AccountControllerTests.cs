@@ -33,9 +33,9 @@ namespace IdentityPattern.Tests
         SignInVM signInModel;
         ApplicationUser applicationUser;
         string notExistingUserName = "not_existing@user.somewhere.com";
-        string confirmationCode = "abcd12345";
         RegisterVM registerModel;
-
+        string confirmationCode = "abcd12345";
+        ForgotPasswordVM forgotPasswordVM;
 
         Mock<HttpContextBase> contextMock;
         Mock<HttpRequestBase> requestMock;
@@ -107,6 +107,8 @@ namespace IdentityPattern.Tests
             signInManagerMock.Setup(x => x.PasswordSignInAsync(signInModel.UserName, signInModel.Password, It.IsAny<bool>(), It.IsAny<bool>())).Returns(Task.FromResult<SignInStatus>(SignInStatus.Success));
 
             registerModel = new RegisterVM() { Email = "test@somewhere.com", Password = "Test123!", ConfirmPassword = "Test123!" };
+
+            forgotPasswordVM = new ForgotPasswordVM() { Email = "test@somewhere.com" };
         }
 
         [Test]
@@ -407,7 +409,7 @@ namespace IdentityPattern.Tests
         {
             ViewResult result;
 
-            result = (ViewResult) await accountController.ConfirmEmail(null, confirmationCode);
+            result = (ViewResult)await accountController.ConfirmEmail(null, confirmationCode);
             Assert.AreEqual("Error", result.ViewName);
 
             result = (ViewResult)await accountController.ConfirmEmail(Guid.NewGuid().ToString(), null);
@@ -433,12 +435,54 @@ namespace IdentityPattern.Tests
             Assert.AreEqual("ConfirmEmail", result.ViewName);
         }
 
-            /// <summary>
-            /// Asserts that the specified model error has been set on the whole model.
-            /// </summary>
-            /// <param name="modelState"></param>
-            /// <param name="expectedErrorMessage"></param>
-            private void AssertModelErrorMessage(ModelStateDictionary modelState, string expectedErrorMessage)
+        [Test]
+        public void ForgotPasswordGET_MethodCalled_ViewReturned()
+        {
+            ViewResult result = (ViewResult)accountController.ForgotPassword();
+
+            Assert.AreEqual(typeof(ForgotPasswordVM), result.Model.GetType());
+            Assert.AreEqual(String.Empty, result.ViewName); // return the view for this method
+        }
+
+        [Test]
+        public async Task ForgotPasswordPOST_ModelStateInvalid_ViewReturned_GeneratePasswordResetTokenAsyncNotCalled()
+        {
+            accountController.ModelState.AddModelError(nameof(SignInVM.UserName), "Any error message");
+
+            ViewResult result = (ViewResult) await accountController.ForgotPassword(forgotPasswordVM);
+
+            Assert.AreEqual(forgotPasswordVM, result.Model);
+            Assert.AreEqual(String.Empty, result.ViewName); // return the view for this method
+
+            applicationUserManagerMock.Verify(x => x.GeneratePasswordResetTokenAsync(It.IsAny<string>()), Times.Never);
+        }
+
+        [Test]
+        public async Task ForgotPasswordPOST_UserTriesToRegister_CaptchaVerified()
+        {
+            await accountController.ForgotPassword(forgotPasswordVM);
+
+            captchaServiceMock.Verify(x => x.VerifyCaptcha(this.accountController.Request, It.IsAny<string>(), It.IsAny<string>()), Times.Once);
+        }
+
+        [Test]
+        public void ForgotPasswordPOST_UserTriesToCallWithIncorrectCaptcha_MethodThrowsAnException()
+        {
+            captchaServiceMock.Setup(x => x.VerifyCaptcha(It.IsAny<HttpRequestBase>(), It.IsAny<string>(), It.IsAny<string>())).Throws(new InvalidOperationException());
+
+            Assert.ThrowsAsync<InvalidOperationException>(
+                async () => { await accountController.ForgotPassword(forgotPasswordVM); }
+                );
+
+            captchaServiceMock.Verify(x => x.VerifyCaptcha(this.accountController.Request, It.IsAny<string>(), It.IsAny<string>()), Times.Once);
+        }
+
+        /// <summary>
+        /// Asserts that the specified model error has been set on the whole model.
+        /// </summary>
+        /// <param name="modelState"></param>
+        /// <param name="expectedErrorMessage"></param>
+        private void AssertModelErrorMessage(ModelStateDictionary modelState, string expectedErrorMessage)
         {
             string actualErrorMessage = GetFirstErrorValue(modelState);
             Assert.AreEqual(expectedErrorMessage, actualErrorMessage);

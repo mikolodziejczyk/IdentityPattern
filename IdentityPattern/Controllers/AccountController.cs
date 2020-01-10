@@ -32,6 +32,7 @@ namespace IdentityPattern.Controllers
         internal static readonly string accountLockedOutMessage = "Twoje konto zostało tymczasowo zablokowane. Spróbuj później.";
 
         internal const string ConfirmUserMailTemplateFileRelativePath = @"Templates\ConfirmMailText.txt";
+        private const string ResetPasswordMailTemplateFileRelativePath = @"Templates\ResetPasswordText.txt";
 
         public AccountController(ApplicationUserManager userManager, ApplicationSignInManager signInManager, IAuthenticationManager authenicationManager, CaptchaService captchaService, TemplateEmailService templateEmailService)
         {
@@ -213,12 +214,17 @@ namespace IdentityPattern.Controllers
 
             // Send an email with this link
             string code = await userManager.GeneratePasswordResetTokenAsync(user.Id);
-            var callbackUrl = Url.Action("ResetPassword", "Account", new { userId = user.Id, code = code }, protocol: Request.Url.Scheme);
+            string callbackUrl = GeneratePasswordResetUrl(user.Id, code);
 
-            templateEmailService.SendMail(user.Email, Properties.Settings.Default.ResetPasswordTitle, @"Templates\ResetPasswordText.txt", callbackUrl);
+            templateEmailService.SendMail(user.Email, Properties.Settings.Default.ResetPasswordTitle, ResetPasswordMailTemplateFileRelativePath, callbackUrl);
 
             return RedirectToAction("ForgotPasswordConfirmation");
 
+        }
+
+        private string GeneratePasswordResetUrl(string userId, string code)
+        {
+            return Url.Action("ResetPassword", "Account", new { userId = userId, code = code }, protocol: Request.Url.Scheme);
         }
 
         [HttpGet]
