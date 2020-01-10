@@ -385,7 +385,7 @@ namespace IdentityPattern.Tests
         }
 
         [Test]
-        public void RegisterPOST__RegistrationCorrect_UserRedirectedToConfirmPage()
+        public void RegisterPOST_RegistrationCorrect_UserRedirectedToConfirmPage()
         {
             requestMock.SetupGet(x => x.Url).Returns(new Uri("http://localhost/Account/Register", UriKind.Absolute));
 
@@ -395,12 +395,50 @@ namespace IdentityPattern.Tests
             Assert.AreEqual("RegisterConfirm", result.RouteValues["Action"]);
         }
 
-        /// <summary>
-        /// Asserts that the specified model error has been set on the whole model.
-        /// </summary>
-        /// <param name="modelState"></param>
-        /// <param name="expectedErrorMessage"></param>
-        private void AssertModelErrorMessage(ModelStateDictionary modelState, string expectedErrorMessage)
+        [Test]
+        public void RegisterConfirm_RegisterConfirmCalled_ViewReturned()
+        {
+            ViewResult result = (ViewResult)accountController.RegisterConfirm();
+            Assert.AreEqual(String.Empty, result.ViewName); // return the view for this method
+        }
+
+        [Test]
+        public async Task ConfirmEmail_NoRequiredData_ConfirmNotCalledAndErrorViewReturned()
+        {
+            ViewResult result;
+
+            result = (ViewResult) await accountController.ConfirmEmail(null, confirmationCode);
+            Assert.AreEqual("Error", result.ViewName);
+
+            result = (ViewResult)await accountController.ConfirmEmail(Guid.NewGuid().ToString(), null);
+            Assert.AreEqual("Error", result.ViewName);
+
+            result = (ViewResult)await accountController.ConfirmEmail(null, null);
+            Assert.AreEqual("Error", result.ViewName);
+
+            applicationUserManagerMock.Verify(x => x.ConfirmEmailAsync(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+        }
+
+        [Test]
+        public async Task ConfirmEmail_RequiredDataPresent_ConfirmEmailAsyncCalledWithExpectedArgumentsAndConfirmViewReturned()
+        {
+            applicationUserManagerMock.Setup(x => x.ConfirmEmailAsync(It.IsAny<string>(), It.IsAny<string>())).Returns(Task.FromResult(IdentityResult.Success));
+
+            string userId = Guid.NewGuid().ToString();
+
+            ViewResult result = (ViewResult)await accountController.ConfirmEmail(userId, confirmationCode);
+
+            applicationUserManagerMock.Verify(x => x.ConfirmEmailAsync(userId, confirmationCode), Times.Once);
+
+            Assert.AreEqual("ConfirmEmail", result.ViewName);
+        }
+
+            /// <summary>
+            /// Asserts that the specified model error has been set on the whole model.
+            /// </summary>
+            /// <param name="modelState"></param>
+            /// <param name="expectedErrorMessage"></param>
+            private void AssertModelErrorMessage(ModelStateDictionary modelState, string expectedErrorMessage)
         {
             string actualErrorMessage = GetFirstErrorValue(modelState);
             Assert.AreEqual(expectedErrorMessage, actualErrorMessage);
