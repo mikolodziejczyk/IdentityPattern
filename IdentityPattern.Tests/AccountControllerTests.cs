@@ -36,11 +36,11 @@ namespace IdentityPattern.Tests
         RegisterVM registerModel;
 
 
-        Mock<HttpContextBase>  contextMock = new Mock<HttpContextBase>();
-        Mock<HttpRequestBase> requestMock = new Mock<HttpRequestBase>();
-        Mock<HttpResponseBase> responseMock = new Mock<HttpResponseBase>();
-        Mock<HttpSessionStateBase> sessionMock = new Mock<HttpSessionStateBase>();
-        Mock<HttpServerUtilityBase> serverMock = new Mock<HttpServerUtilityBase>();
+        Mock<HttpContextBase> contextMock;
+        Mock<HttpRequestBase> requestMock;
+        Mock<HttpResponseBase> responseMock;
+        Mock<HttpSessionStateBase> sessionMock;
+        Mock<HttpServerUtilityBase> serverMock;
 
         [SetUp]
         public void Setup()
@@ -56,7 +56,13 @@ namespace IdentityPattern.Tests
 
             accountController = new AccountController(applicationUserManagerMock.Object, signInManagerMock.Object, authenicationManagerMock.Object, captchaServiceMock.Object, templateEmailServiceMock.Object);
 
-            // setup Controller.Url
+            #region Controller.Url
+
+            contextMock = new Mock<HttpContextBase>();
+            requestMock = new Mock<HttpRequestBase>();
+            responseMock = new Mock<HttpResponseBase>();
+            sessionMock = new Mock<HttpSessionStateBase>();
+            serverMock = new Mock<HttpServerUtilityBase>();
 
             contextMock.Setup(ctx => ctx.Request).Returns(requestMock.Object);
             contextMock.Setup(ctx => ctx.Response).Returns(responseMock.Object);
@@ -76,12 +82,12 @@ namespace IdentityPattern.Tests
             RouteConfig.RegisterRoutes(routes);
             UrlHelper urlHelper = new UrlHelper(new RequestContext(contextMock.Object, new RouteData()), routes);
 
-            // end of Controller.Url
+            #endregion Controller.Url
 
             accountController.Url = urlHelper;
 
-            applicationUser = new ApplicationUser() { Id = Guid.NewGuid().ToString(), UserName = "test@somewhere.com", Email = "test@somewhere.com",  EmailConfirmed = true, IsApproved = true, IsDisabled = false };
-            signInModel = new SignInVM() { UserName = applicationUser.UserName, Password =  "Test123!"};
+            applicationUser = new ApplicationUser() { Id = Guid.NewGuid().ToString(), UserName = "test@somewhere.com", Email = "test@somewhere.com", EmailConfirmed = true, IsApproved = true, IsDisabled = false };
+            signInModel = new SignInVM() { UserName = applicationUser.UserName, Password = "Test123!" };
 
             // applicationUserManager.FindByNameAsync() for the specified user name returns the predefined ApplicationUser
             applicationUserManagerMock.Setup(x => x.FindByNameAsync(It.Is<string>((s) => signInModel.UserName == s))).Returns(Task.FromResult<ApplicationUser>(applicationUser));
@@ -163,6 +169,31 @@ namespace IdentityPattern.Tests
             RedirectResult result = (RedirectResult)await accountController.SignIn(signInModel, localReturnUrl);
 
             Assert.AreEqual(localReturnUrl, result.Url);
+
+            // PasswordSignInAsync has been called exaclty once with the exactly specified parameters
+            signInManagerMock.Verify(x => x.PasswordSignInAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<bool>()), Times.Once);
+            signInManagerMock.Verify(x => x.PasswordSignInAsync(It.Is<string>((s) => signInModel.UserName == s), It.Is<string>((s) => signInModel.Password == s), It.IsAny<bool>(), It.IsAny<bool>()), Times.Once);
+        }
+
+        [Test]
+        public async Task SignInPOST_UserLogsInWithRememberMe_PasswordSignInAsyncCalledWithIsPersistent()
+        {
+            signInModel.RememberMe = true;
+
+            ActionResult result = (ActionResult)await accountController.SignIn(signInModel, null);
+
+            // PasswordSignInAsync has been called exaclty once with the exactly specified parameters
+            signInManagerMock.Verify(x => x.PasswordSignInAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<bool>()), Times.Once);
+            signInManagerMock.Verify(x => x.PasswordSignInAsync(signInModel.UserName, signInModel.Password, true, It.IsAny<bool>()), Times.Once);
+        }
+
+        [Test]
+        public async Task SignInPOST_UserLogsInWithoutReturnUrl_LoginCalledAndRedirectToHomeIndexReturned()
+        {
+            RedirectToRouteResult result = (RedirectToRouteResult)await accountController.SignIn(signInModel, null);
+
+            Assert.AreEqual("Home", result.RouteValues["Controller"]);
+            Assert.AreEqual("Index", result.RouteValues["Action"]);
 
             // PasswordSignInAsync has been called exaclty once with the exactly specified parameters
             signInManagerMock.Verify(x => x.PasswordSignInAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<bool>()), Times.Once);
