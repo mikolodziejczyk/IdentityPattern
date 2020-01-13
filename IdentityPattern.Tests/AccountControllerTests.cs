@@ -10,6 +10,8 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
+using System.Security.Claims;
+using System.Security.Principal;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web;
@@ -43,6 +45,8 @@ namespace IdentityPattern.Tests
         Mock<HttpResponseBase> responseMock;
         Mock<HttpSessionStateBase> sessionMock;
         Mock<HttpServerUtilityBase> serverMock;
+
+        ControllerContext controllerContext;
 
         [SetUp]
         public void Setup()
@@ -87,7 +91,8 @@ namespace IdentityPattern.Tests
             #endregion Controller.Url
 
             accountController.Url = urlHelper;
-            accountController.ControllerContext = new ControllerContext(contextMock.Object, new RouteData(), accountController);
+            controllerContext = new ControllerContext(contextMock.Object, new RouteData(), accountController);
+            accountController.ControllerContext = controllerContext;
 
             applicationUser = new ApplicationUser() { Id = Guid.NewGuid().ToString(), UserName = "test@somewhere.com", Email = "test@somewhere.com", EmailConfirmed = true, IsApproved = true, IsDisabled = false };
             signInModel = new SignInVM() { UserName = applicationUser.UserName, Password = "Test123!" };
@@ -627,6 +632,108 @@ namespace IdentityPattern.Tests
             Assert.AreEqual(String.Empty, result.ViewName); // return the view for this method
         }
 
+        [Test]
+        public void ChangePasswordGET_MethodCalled_ViewReturned()
+        {
+            ViewResult result = (ViewResult)accountController.ChangePassword();
+
+            Assert.AreEqual(typeof(ChangePasswordVM), result.Model.GetType());
+            Assert.AreEqual(String.Empty, result.ViewName); // return the view for this method
+        }
+
+        [Test]
+        public void ChangePasswordPOST_InputDataCorrect_ChangePasswordCalledAndRedirectReturned()
+        {
+            #region mocking controller.User and User.Identity.GetUserId<string>()
+
+            string userid = Guid.NewGuid().ToString();
+            string userName = "test@somewhere.com";
+
+            List<Claim> claims = new List<Claim>{
+             new Claim("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name", userName),
+             new Claim("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier", userid)
+            };
+
+            var genericIdentity = new GenericIdentity(userName);
+            genericIdentity.AddClaims(claims);
+            var genericPrincipal = new GenericPrincipal(genericIdentity, new string[] { });
+
+            contextMock.SetupGet(x => x.User).Returns(genericPrincipal);
+
+            #endregion mocking controller.User and User.Identity.GetUserId<string>()
+
+            ChangePasswordVM changePasswordVM = new ChangePasswordVM() { CurrentPassword = "Password123", NewPassword = "Password321", RepeatNewPassword = "Password321" };
+
+            applicationUserManagerMock.Setup(x => x.ChangePasswordAsync(userid, changePasswordVM.CurrentPassword, changePasswordVM.NewPassword)).Returns(Task.FromResult(IdentityResult.Success));
+
+            RedirectToRouteResult result = (RedirectToRouteResult)accountController.ChangePassword(changePasswordVM);
+
+
+            Assert.AreEqual(null, result.RouteValues["Controller"]);
+            Assert.AreEqual("ChangePasswordConfirmation", result.RouteValues["Action"]);
+
+            applicationUserManagerMock.Verify(x => x.ChangePasswordAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<String>()), Times.Once);
+            applicationUserManagerMock.Verify(x => x.ChangePasswordAsync(userid, changePasswordVM.CurrentPassword, changePasswordVM.NewPassword), Times.Once);
+        }
+
+        [Test]
+        public void ChangePasswordPOST_ChangePasswordReturnsError_ExpectedErrorMessageReturned()
+        {
+            #region mocking controller.User and User.Identity.GetUserId<string>()
+
+            string userid = Guid.NewGuid().ToString();
+            string userName = "test@somewhere.com";
+
+            List<Claim> claims = new List<Claim>{
+             new Claim("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name", userName),
+             new Claim("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier", userid)
+            };
+
+            var genericIdentity = new GenericIdentity(userName);
+            genericIdentity.AddClaims(claims);
+            var genericPrincipal = new GenericPrincipal(genericIdentity, new string[] { });
+
+            contextMock.SetupGet(x => x.User).Returns(genericPrincipal);
+
+            #endregion mocking controller.User and User.Identity.GetUserId<string>()
+
+            ChangePasswordVM changePasswordVM = new ChangePasswordVM() { CurrentPassword = "Password123", NewPassword = "Password321", RepeatNewPassword = "Password321" };
+
+            string changePasswordErrorMessage = "Change password error message.";
+            applicationUserManagerMock.Setup(x => x.ChangePasswordAsync(userid, changePasswordVM.CurrentPassword, changePasswordVM.NewPassword)).Returns(Task.FromResult(new IdentityResult(changePasswordErrorMessage)));
+
+            ViewResult result = (ViewResult)accountController.ChangePassword(changePasswordVM);
+
+            Assert.AreEqual(changePasswordVM, result.Model);
+            Assert.AreEqual(String.Empty, result.ViewName); // return the view for this method
+
+            AssertModelErrorMessage(accountController.ModelState, changePasswordErrorMessage);
+
+            applicationUserManagerMock.Verify(x => x.ChangePasswordAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<String>()), Times.Once);
+            applicationUserManagerMock.Verify(x => x.ChangePasswordAsync(userid, changePasswordVM.CurrentPassword, changePasswordVM.NewPassword), Times.Once);
+        }
+
+        [Test]
+        public async Task ChangePasswordPOST_ModelStateInvalid_ViewReturned_ChangePasswordNotCalled()
+        {
+            accountController.ModelState.AddModelError(nameof(ChangePasswordVM.NewPassword), "Any error message");
+
+            ChangePasswordVM changePasswordVM = new ChangePasswordVM() { CurrentPassword = "Password123", NewPassword = "Password321", RepeatNewPassword = "Password321" };
+            ViewResult result = (ViewResult)accountController.ChangePassword(changePasswordVM);
+
+            Assert.AreEqual(changePasswordVM, result.Model);
+            Assert.AreEqual(String.Empty, result.ViewName); // return the view for this method
+
+            applicationUserManagerMock.Verify(x => x.ChangePasswordAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<String>()), Times.Never);
+        }
+
+        [Test]
+        public void ChangePasswordConfirmationGET_MethodCalled_ViewReturned()
+        {
+            ViewResult result = (ViewResult)accountController.ChangePasswordConfirmation();
+
+            Assert.AreEqual(String.Empty, result.ViewName); // return the view for this method
+        }
 
         /// <summary>
         /// Asserts that the specified model error has been set on the whole model.
