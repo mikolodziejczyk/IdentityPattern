@@ -714,7 +714,7 @@ namespace IdentityPattern.Tests
         }
 
         [Test]
-        public async Task ChangePasswordPOST_ModelStateInvalid_ViewReturned_ChangePasswordNotCalled()
+        public void ChangePasswordPOST_ModelStateInvalid_ViewReturned_ChangePasswordNotCalled()
         {
             accountController.ModelState.AddModelError(nameof(ChangePasswordVM.NewPassword), "Any error message");
 
