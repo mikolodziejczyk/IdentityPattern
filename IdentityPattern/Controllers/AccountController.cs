@@ -271,7 +271,7 @@ namespace IdentityPattern.Controllers
                 ModelState.AddModelError("", error);
             }
 
-            return View();
+            return View(model);
         }
 
         [HttpGet]

@@ -36,6 +36,7 @@ namespace IdentityPattern.Tests
         RegisterVM registerModel;
         string confirmationCode = "abcd12345";
         ForgotPasswordVM forgotPasswordVM;
+        ResetPasswordVM resetPasswordVM;
 
         Mock<HttpContextBase> contextMock;
         Mock<HttpRequestBase> requestMock;
@@ -112,6 +113,9 @@ namespace IdentityPattern.Tests
 
             // applicationUserManagerMock.GenerateEmailConfirmationTokenAsync by default returns success
             applicationUserManagerMock.Setup(x => x.GeneratePasswordResetTokenAsync(It.IsAny<string>())).Returns(Task.FromResult<string>(confirmationCode));
+
+            resetPasswordVM = new ResetPasswordVM() { Email = applicationUser.Email, Code = "abc123", Password = "Test123!", ConfirmPassword = "Test123!" };
+
         }
 
         [Test]
@@ -452,7 +456,7 @@ namespace IdentityPattern.Tests
         {
             accountController.ModelState.AddModelError(nameof(SignInVM.UserName), "Any error message");
 
-            ViewResult result = (ViewResult) await accountController.ForgotPassword(forgotPasswordVM);
+            ViewResult result = (ViewResult)await accountController.ForgotPassword(forgotPasswordVM);
 
             Assert.AreEqual(forgotPasswordVM, result.Model);
             Assert.AreEqual(String.Empty, result.ViewName); // return the view for this method
@@ -525,6 +529,104 @@ namespace IdentityPattern.Tests
             Assert.AreEqual(null, result.RouteValues["Controller"]);
             Assert.AreEqual("ForgotPasswordConfirmation", result.RouteValues["Action"]);
         }
+
+        [Test]
+        public void ForgotPasswordConfirmationGET_MethodCalled_ViewReturned()
+        {
+            ViewResult result = (ViewResult)accountController.ForgotPassword();
+
+            Assert.AreEqual(String.Empty, result.ViewName); // return the view for this method
+        }
+
+        [Test]
+        public void ResetPasswordGET_NoCode_ErrorViewReturned()
+        {
+            ViewResult result = (ViewResult)accountController.ResetPassword((string)null);
+
+            Assert.AreEqual("Error", result.ViewName); // return the view for this method
+        }
+
+        [Test]
+        public void ResetPasswordGET_CodePresent_ModelWithCodeAndViewReturned()
+        {
+            string code = "abc123";
+            ViewResult result = (ViewResult)accountController.ResetPassword(code);
+
+            Assert.AreEqual(typeof(ResetPasswordVM), result.Model.GetType());
+            Assert.AreEqual(String.Empty, result.ViewName); // return the view for this method
+            Assert.AreEqual(code, ((ResetPasswordVM)result.Model).Code);
+        }
+
+        [Test]
+        public async Task ResetPasswordPOST_ModelStateInvalid_ViewReturned_ResetPasswordNotCalled()
+        {
+            accountController.ModelState.AddModelError(nameof(ResetPasswordVM.Email), "Any error message");
+
+            ViewResult result = (ViewResult)await accountController.ResetPassword(resetPasswordVM);
+
+            Assert.AreEqual(resetPasswordVM, result.Model);
+            Assert.AreEqual(String.Empty, result.ViewName); // return the view for this method
+
+            applicationUserManagerMock.Verify(x => x.ResetPasswordAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<String>()), Times.Never);
+        }
+
+        [Test]
+        public async Task ResetPasswordPOST_NonExistingUserSpecified_ConfirmationViewReturnedButResetPasswordNotCalled()
+        {
+            resetPasswordVM.Email = nonExistingUserName;
+
+            RedirectToRouteResult result = (RedirectToRouteResult)await accountController.ResetPassword(resetPasswordVM);
+
+
+            Assert.AreEqual(null, result.RouteValues["Controller"]);
+            Assert.AreEqual("ResetPasswordConfirmation", result.RouteValues["Action"]);
+
+            applicationUserManagerMock.Verify(x => x.FindByNameAsync(resetPasswordVM.Email), Times.Once);
+            applicationUserManagerMock.Verify(x => x.ResetPasswordAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<String>()), Times.Never);
+        }
+
+        [Test]
+        public async Task ResetPasswordPOST_CorrectDataSpecified_ResetPasswordAsyncCalledAndConfirmationViewReturned()
+        {
+            applicationUserManagerMock.Setup(x => x.ResetPasswordAsync(applicationUser.Id, resetPasswordVM.Code, resetPasswordVM.Password)).Returns(Task.FromResult(IdentityResult.Success));
+
+            RedirectToRouteResult result = (RedirectToRouteResult)await accountController.ResetPassword(resetPasswordVM);
+
+
+            Assert.AreEqual(null, result.RouteValues["Controller"]);
+            Assert.AreEqual("ResetPasswordConfirmation", result.RouteValues["Action"]);
+
+            applicationUserManagerMock.Verify(x => x.FindByNameAsync(resetPasswordVM.Email), Times.Once);
+            applicationUserManagerMock.Verify(x => x.ResetPasswordAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<String>()), Times.Once);
+            applicationUserManagerMock.Verify(x => x.ResetPasswordAsync(applicationUser.Id, resetPasswordVM.Code, resetPasswordVM.Password), Times.Once);
+        }
+
+        [Test]
+        public async Task ResetPasswordPOST_ResetPasswordAsyncReturnedError_ExpectedErrorMessageReturned()
+        {
+            string resetPasswordErrorMessage = "Reset password error message.";
+            applicationUserManagerMock.Setup(x => x.ResetPasswordAsync(applicationUser.Id, resetPasswordVM.Code, resetPasswordVM.Password)).Returns(Task.FromResult(new IdentityResult(resetPasswordErrorMessage)));
+
+            ViewResult result = (ViewResult)await accountController.ResetPassword(resetPasswordVM);
+
+            Assert.AreEqual(resetPasswordVM, result.Model);
+            Assert.AreEqual(String.Empty, result.ViewName); // return the view for this method
+
+            applicationUserManagerMock.Verify(x => x.FindByNameAsync(resetPasswordVM.Email), Times.Once);
+            applicationUserManagerMock.Verify(x => x.ResetPasswordAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<String>()), Times.Once);
+            applicationUserManagerMock.Verify(x => x.ResetPasswordAsync(applicationUser.Id, resetPasswordVM.Code, resetPasswordVM.Password), Times.Once);
+
+            AssertModelErrorMessage(accountController.ModelState, resetPasswordErrorMessage);
+        }
+
+        [Test]
+        public void ResetPasswordConfirmationGET_MethodCalled_ViewReturned()
+        {
+            ViewResult result = (ViewResult)accountController.ResetPasswordConfirmation();
+
+            Assert.AreEqual(String.Empty, result.ViewName); // return the view for this method
+        }
+
 
         /// <summary>
         /// Asserts that the specified model error has been set on the whole model.
