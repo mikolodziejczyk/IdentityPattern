@@ -1,4 +1,5 @@
 ﻿using IdentityPattern.Models.UserManagement;
+using log4net;
 using Microsoft.AspNet.Identity;
 using System;
 using System.Collections.Generic;
@@ -17,6 +18,8 @@ namespace IdentityPattern.Controllers
         private readonly UserRepository userRepository;
         private readonly ApplicationUserManager userManager;
 
+        private static readonly ILog log = LogManager.GetLogger(typeof(UserManagementController));
+
         public UserManagementController(UserRepository userRepository, ApplicationUserManager userManager)
         {
             this.userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
@@ -28,7 +31,7 @@ namespace IdentityPattern.Controllers
             int pageSize = 20;
             int totalRows;
 
-            var users = userRepository.GetPage(search, isApproved, isDisabled,  page - 1, pageSize, sort, sortDir, out totalRows);
+            var users = userRepository.GetPage(search, isApproved, isDisabled, page - 1, pageSize, sort, sortDir, out totalRows);
 
             UserListVM vm = new UserListVM()
             {
@@ -58,8 +61,9 @@ namespace IdentityPattern.Controllers
                 {
                     await userRepository.Delete(id);
                 }
-                catch
+                catch (Exception e)
                 {
+                    log.Error($"Removing the user {id} failed.", e);
                     return View("OperationFailed", Tuple.Create("Nie udało się usunąć użytkownika.", Url.Action("Details", new { id = id })));
                 }
 
@@ -71,9 +75,19 @@ namespace IdentityPattern.Controllers
                 {
                     bool shouldDisable = operation == "disable";
                     userRepository.ToggleDisable(id, shouldDisable);
+
+                    if (shouldDisable)
+                    {
+                        log.InfoFormat("The user {0} has been disabled by {1}.", id, User.Identity.Name);
+                    }
+                    else
+                    {
+                        log.InfoFormat("The user {0} has been enabled by {1}.", id, User.Identity.Name);
+                    }
                 }
-                catch
+                catch(Exception e)
                 {
+                    log.Error($"Disabling/enabling ({operation}) the user {id} failed.", e);
                     return View("OperationFailed", Tuple.Create("Nie udało się zaktualizować użytkownika.", Url.Action("Details", new { id = id })));
                 }
 
@@ -84,9 +98,11 @@ namespace IdentityPattern.Controllers
                 try
                 {
                     userRepository.Approve(id);
+                    log.InfoFormat("The user {0} has been approved by {1}.", id, User.Identity.Name);
                 }
-                catch
+                catch(Exception e)
                 {
+                    log.Error($"Approving the user {id} failed.", e);
                     return View("OperationFailed", Tuple.Create("Nie udało się zaakceptować użytkownika.", Url.Action("Details", new { id = id })));
                 }
 
@@ -117,6 +133,8 @@ namespace IdentityPattern.Controllers
             {
                 user = userManager.FindByName(model.Email);
                 userManager.AddToRole(user.Id, AdminRoleName);
+
+                log.InfoFormat("A new administrator {0} has been added by {1}.", model.Email, User.Identity.Name);
 
                 return RedirectToAction("Details", new { id = user.Id });
             }
