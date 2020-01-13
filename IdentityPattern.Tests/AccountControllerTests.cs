@@ -735,6 +735,35 @@ namespace IdentityPattern.Tests
             Assert.AreEqual(String.Empty, result.ViewName); // return the view for this method
         }
 
+        [Test]
+        public void MyAccountGET_MethodCalled_UserFoundAndViewReturned()
+        {
+            #region mocking controller.User and User.Identity.GetUserId<string>()
+
+            string userid = Guid.NewGuid().ToString();
+            string userName = "test@somewhere.com";
+
+            List<Claim> claims = new List<Claim>{
+             new Claim("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name", userName),
+             new Claim("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier", userid)
+            };
+
+            var genericIdentity = new GenericIdentity(userName);
+            genericIdentity.AddClaims(claims);
+            var genericPrincipal = new GenericPrincipal(genericIdentity, new string[] { });
+
+            contextMock.SetupGet(x => x.User).Returns(genericPrincipal);
+
+            #endregion mocking controller.User and User.Identity.GetUserId<string>()
+
+            applicationUserManagerMock.Setup(x => x.FindByIdAsync(userid)).Returns(Task.FromResult(applicationUser));
+
+            ViewResult result = (ViewResult)accountController.MyAccount();
+
+            Assert.AreEqual(applicationUser, result.Model);
+            Assert.AreEqual(String.Empty, result.ViewName); // return the view for this method
+        }
+
         /// <summary>
         /// Asserts that the specified model error has been set on the whole model.
         /// </summary>
