@@ -14,6 +14,7 @@ using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using User.Repository;
+using log4net;
 
 namespace IdentityPattern.Controllers
 {
@@ -24,6 +25,8 @@ namespace IdentityPattern.Controllers
         private readonly IAuthenticationManager authenicationManager;
         private readonly CaptchaService captchaService;
         private readonly TemplateEmailService templateEmailService;
+
+        private static readonly ILog log = LogManager.GetLogger(typeof(AccountController));
 
         internal static readonly string loginFailedMessage = "Nie udało się zalogować.";
         internal static readonly string emailNotConfirmedMessage = "Nie potwierdziłeś adresu e-mail. Na podany adres otrzymałeś wiadomość e-mail z łączem do potwierdzenia adresu.";
@@ -66,6 +69,7 @@ namespace IdentityPattern.Controllers
 
             if (user == null)
             {
+                log.InfoFormat("A non-existing user {0} tried to log in.", model.UserName);
                 ModelState.AddModelError(String.Empty, loginFailedMessage);
                 return View(model);
             }
@@ -78,18 +82,21 @@ namespace IdentityPattern.Controllers
 
             if (!user.EmailConfirmed)
             {
+                log.InfoFormat("The user {0} tried to log in before its mail has been confirmed.", model.UserName);
                 ModelState.AddModelError(String.Empty, emailNotConfirmedMessage);
                 return View(model);
             }
 
             if (!user.IsApproved)
             {
+                log.InfoFormat("The user {0} tried to log in before the account has been approved.", model.UserName);
                 ModelState.AddModelError(String.Empty, accountNotApprovedMessage);
                 return View(model);
             }
 
             if (user.IsDisabled)
             {
+                log.InfoFormat("The user {0} tried to log in but the account is disabled.", model.UserName);
                 ModelState.AddModelError(String.Empty, accountDisabledMessage);
                 return View(model);
             }
@@ -99,12 +106,15 @@ namespace IdentityPattern.Controllers
             switch (result)
             {
                 case SignInStatus.Success:
+                    log.DebugFormat("The user {0} logged in successfully.", model.UserName);
                     return RedirectToLocal(returnUrl);
                 case SignInStatus.LockedOut:
+                    log.InfoFormat("The user {0} has been locked out.", model.UserName);
                     ModelState.AddModelError(String.Empty, accountLockedOutMessage);
                     return View(model);
                 case SignInStatus.Failure:
                 default:
+                    log.InfoFormat("The user {0} failed to log in.", model.UserName);
                     ModelState.AddModelError(String.Empty, loginFailedMessage);
                     return View(model);
             }
@@ -145,6 +155,7 @@ namespace IdentityPattern.Controllers
                 string callbackUrl = GenerateConfirmationCallbackUrl(user.Id, code);
 
                 templateEmailService.SendMail(user.Email, Properties.Settings.Default.ConfirmMailTitle, ConfirmUserMailTemplateFileRelativePath, callbackUrl);
+                log.InfoFormat("The user {0} registered successfully.", user.UserName);
                 return RedirectToAction("RegisterConfirm");
             }
             else
@@ -182,8 +193,19 @@ namespace IdentityPattern.Controllers
             {
                 return View("Error");
             }
+
             var result = await userManager.ConfirmEmailAsync(userId, code);
-            return View(result.Succeeded ? "ConfirmEmail" : "Error");
+
+            if (result.Succeeded)
+            {
+                log.InfoFormat("The user {0} has confirmed his/her e-mail.", userId);
+                return View("ConfirmEmail");
+            }
+            else
+            {
+                log.WarnFormat("The user {0} provided invalid code to confirm his/her e-mail.", userId);
+                return View("Error");
+            }
         }
 
         [HttpGet]
@@ -209,6 +231,7 @@ namespace IdentityPattern.Controllers
             if (user == null || user.EmailConfirmed == false)
             {
                 // Don't reveal that the user does not exist or is not confirmed
+                log.WarnFormat("A non-existing user {0} or this user w/o confirmed mail tried to reset password.", model.Email);
                 return View("ForgotPasswordConfirmation");
             }
 
@@ -217,6 +240,8 @@ namespace IdentityPattern.Controllers
             string callbackUrl = GeneratePasswordResetUrl(user.Id, code);
 
             templateEmailService.SendMail(user.Email, Properties.Settings.Default.ResetPasswordTitle, ResetPasswordMailTemplateFileRelativePath, callbackUrl);
+
+            log.InfoFormat("The user {0} has requested a password reset.", model.Email);
 
             return RedirectToAction("ForgotPasswordConfirmation");
 
@@ -257,11 +282,13 @@ namespace IdentityPattern.Controllers
             if (user == null)
             {
                 // Don't reveal that the user does not exist
+                log.WarnFormat("A non-existing user {0} tried to reset password.", model.Email);
                 return RedirectToAction("ResetPasswordConfirmation");
             }
             var result = await userManager.ResetPasswordAsync(user.Id, model.Code, model.Password);
             if (result.Succeeded)
             {
+                log.InfoFormat("The user {0} has reset his/her password successfully.", model.Email);
                 return RedirectToAction("ResetPasswordConfirmation");
             }
 
@@ -305,6 +332,8 @@ namespace IdentityPattern.Controllers
                     ModelState.AddModelError("", identityResult.Errors.First());
                     return View(model);
                 }
+
+                log.InfoFormat("The user {0} has changed his/her password successfully.", User.Identity.Name);
 
                 return RedirectToAction("ChangePasswordConfirmation");
             }
