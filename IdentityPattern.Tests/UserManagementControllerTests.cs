@@ -5,10 +5,13 @@ using Moq;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web;
 using System.Web.Mvc;
+using System.Web.Routing;
 using User.Repository;
 
 namespace IdentityPattern.Tests
@@ -21,6 +24,13 @@ namespace IdentityPattern.Tests
         Mock<ApplicationUserManager> applicationUserManagerMock;
         Mock<UserRepository> userRepositoryMock;
 
+        Mock<HttpContextBase> contextMock;
+        Mock<HttpRequestBase> requestMock;
+        Mock<HttpResponseBase> responseMock;
+        Mock<HttpSessionStateBase> sessionMock;
+        Mock<HttpServerUtilityBase> serverMock;
+
+
         [SetUp]
         public void Setup()
         {
@@ -32,6 +42,39 @@ namespace IdentityPattern.Tests
             userRepositoryMock = new Mock<UserRepository>(applicationUserManagerMock.Object, templateEmailServiceMock.Object);
 
             userManagementController = new UserManagementController(userRepositoryMock.Object, applicationUserManagerMock.Object);
+
+            #region Controller.Url
+
+            contextMock = new Mock<HttpContextBase>();
+            requestMock = new Mock<HttpRequestBase>();
+            responseMock = new Mock<HttpResponseBase>();
+            sessionMock = new Mock<HttpSessionStateBase>();
+            serverMock = new Mock<HttpServerUtilityBase>();
+
+            contextMock.Setup(ctx => ctx.Request).Returns(requestMock.Object);
+            contextMock.Setup(ctx => ctx.Response).Returns(responseMock.Object);
+            contextMock.Setup(ctx => ctx.Session).Returns(sessionMock.Object);
+            contextMock.Setup(ctx => ctx.Server).Returns(serverMock.Object);
+
+            requestMock.SetupGet(x => x.ApplicationPath).Returns("/");
+            requestMock.SetupGet(x => x.Url).Returns(new Uri("http://localhost/UserManagement/Index", UriKind.Absolute));
+            requestMock.SetupGet(x => x.ServerVariables).Returns(new NameValueCollection());
+
+            responseMock.Setup(x => x.ApplyAppPathModifier(It.IsAny<string>())).Returns<string>(x => x);
+
+            contextMock.SetupGet(x => x.Request).Returns(requestMock.Object);
+            contextMock.SetupGet(x => x.Response).Returns(responseMock.Object);
+
+            var routes = new RouteCollection();
+            RouteConfig.RegisterRoutes(routes);
+            UrlHelper urlHelper = new UrlHelper(new RequestContext(contextMock.Object, new RouteData()), routes);
+
+            #endregion Controller.Url
+
+            userManagementController.Url = urlHelper;
+            ControllerContext controllerContext = new ControllerContext(contextMock.Object, new RouteData(), userManagementController);
+            userManagementController.ControllerContext = controllerContext;
+
         }
 
         [Test]
@@ -44,7 +87,7 @@ namespace IdentityPattern.Tests
 
             ViewResult result = (ViewResult)userManagementController.Details(userId);
 
-            Assert.AreEqual(null, result.View);
+            Assert.AreEqual(String.Empty, result.ViewName);
             Assert.AreEqual(applicationUser, result.Model);
 
             userRepositoryMock.Verify(x => x.Get(It.IsAny<string>()), Times.Once);
@@ -61,6 +104,20 @@ namespace IdentityPattern.Tests
 
             Assert.AreEqual(null, result.RouteValues["Controller"]);
             Assert.AreEqual("Index", result.RouteValues["Action"]);
+
+            userRepositoryMock.Verify(x => x.Delete(It.IsAny<string>()), Times.Once);
+            userRepositoryMock.Verify(x => x.Delete(userId), Times.Once);
+        }
+
+        [Test]
+        public async Task DetailsPOST_DeleteUserFails_OperationFailedViewReturned()
+        {
+            string userId = Guid.NewGuid().ToString();
+            userRepositoryMock.Setup(x => x.Delete(userId)).Throws(new InvalidOperationException());
+
+            ViewResult result = (ViewResult)await userManagementController.Details(userId, "delete");
+
+            Assert.AreEqual("OperationFailed", result.ViewName);
 
             userRepositoryMock.Verify(x => x.Delete(It.IsAny<string>()), Times.Once);
             userRepositoryMock.Verify(x => x.Delete(userId), Times.Once);
