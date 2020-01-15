@@ -20,7 +20,7 @@ namespace User.Repository
             this.templateEmailService = templateEmailService ?? throw new ArgumentNullException(nameof(templateEmailService));
         }
 
-        public IEnumerable<ApplicationUser> GetPage(string searchExpression, bool? isApproved, bool? isDisabled, int pageIndex, int pageSize, string sortColumn, string sortDir, out int totalRows)
+        public virtual IEnumerable<ApplicationUser> GetPage(string searchExpression, bool? isApproved, bool? isDisabled, int pageIndex, int pageSize, string sortColumn, string sortDir, out int totalRows)
         {
             IEnumerable<ApplicationUser> r;
 
@@ -71,7 +71,7 @@ namespace User.Repository
 
         }
 
-        public ApplicationUser Get(string id)
+        public virtual ApplicationUser Get(string id)
         {
             ApplicationUser r;
 
@@ -84,7 +84,7 @@ namespace User.Repository
             return r;
         }
 
-        public void Approve(string id)
+        public virtual void Approve(string id)
         {
             using (ApplicationDbContext context = new ApplicationDbContext())
             {
@@ -96,7 +96,7 @@ namespace User.Repository
             }
         }
 
-        public void ToggleDisable(string id, bool shouldBeDisabled)
+        public virtual void ToggleDisable(string id, bool shouldBeDisabled)
         {
             using (ApplicationDbContext context = new ApplicationDbContext())
             {
@@ -108,7 +108,7 @@ namespace User.Repository
             }
         }
 
-        public async Task Delete(string id)
+        public virtual async Task Delete(string id)
         {
             var user = await userManager.FindByIdAsync(id);
             var logins = user.Logins;
