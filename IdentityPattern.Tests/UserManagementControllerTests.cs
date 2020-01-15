@@ -99,6 +99,30 @@ namespace IdentityPattern.Tests
         }
 
         [Test]
+        public void IndexGET_UserPageRequested_UserListRetrievedAndReturned()
+        {
+            ApplicationUser applicationUser = new ApplicationUser() { Id = Guid.NewGuid().ToString(), Email = "someone@somewhere.com" };
+
+            int totalRows = 1;
+            userRepositoryMock.Setup(x => x.GetPage(It.IsAny<string>(), It.IsAny<bool?>(), It.IsAny<bool?>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>(), out totalRows)).Returns(new ApplicationUser[] { applicationUser });
+
+            ViewResult result = (ViewResult)userManagementController.Index(null, null, null, 1, "Email", "ASC");
+
+            Assert.AreEqual(String.Empty, result.ViewName);
+
+            UserListVM userListVM = (UserListVM)result.Model;
+
+            Assert.AreEqual(null, userListVM.SearchExpression);
+            Assert.AreEqual(totalRows, userListVM.TotalRows);
+            Assert.AreEqual(null, userListVM.IsApproved);
+            Assert.AreEqual(null, userListVM.IsDisabled);
+            Assert.AreEqual(new ApplicationUser[] { applicationUser }, userListVM.Users);
+
+            userRepositoryMock.Verify(x => x.GetPage(It.IsAny<string>(), It.IsAny<bool?>(), It.IsAny<bool?>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>(), out totalRows), Times.Once);
+            userRepositoryMock.Verify(x => x.GetPage(null, null, null, 0, userListVM.PageSize, "Email", "ASC", out totalRows), Times.Once);
+        }
+
+        [Test]
         public void DetailsGET_SpecifiedId_UserDataRetrievedAndReturned()
         {
             string userId = Guid.NewGuid().ToString();
