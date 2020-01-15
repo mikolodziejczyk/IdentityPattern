@@ -224,11 +224,11 @@
     <Content Include="Log4NetConfig.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="MailTemplates\ResetPasswordText.txt">
+    <Content Include="MailTemplates\ConfirmMailText.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="MailTemplates\ConfirmMailText.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    <Content Include="MailTemplates\ResetPasswordText.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="AppStylesheets\app.scss" />
     <Content Include="AppScripts\tsconfig.json" />

@@ -34,8 +34,8 @@ namespace IdentityPattern.Controllers
         internal static readonly string accountDisabledMessage = "Twoje konto zostało zablokowane. Nie możesz się zalogować.";
         internal static readonly string accountLockedOutMessage = "Twoje konto zostało tymczasowo zablokowane. Spróbuj później.";
 
-        internal const string ConfirmUserMailTemplateFileRelativePath = @"Templates\ConfirmMailText.txt";
-        internal const string ResetPasswordMailTemplateFileRelativePath = @"Templates\ResetPasswordText.txt";
+        internal const string ConfirmUserMailTemplateFileRelativePath = @"MailTemplates\ConfirmMailText.html";
+        internal const string ResetPasswordMailTemplateFileRelativePath = @"MailTemplates\ResetPasswordText.html";
 
         public AccountController(ApplicationUserManager userManager, ApplicationSignInManager signInManager, IAuthenticationManager authenicationManager, CaptchaService captchaService, TemplateEmailService templateEmailService)
         {

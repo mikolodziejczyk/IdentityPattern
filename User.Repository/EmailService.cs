@@ -20,6 +20,7 @@ namespace User.Repository
             mailMessage.To.Add(message.Destination);
             mailMessage.Subject = message.Subject;
             mailMessage.Body = message.Body;
+            mailMessage.IsBodyHtml = true;
 
             SmtpClient smtpClient = new SmtpClient();
 

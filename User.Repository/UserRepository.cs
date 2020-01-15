@@ -10,7 +10,7 @@ namespace User.Repository
 {
     public class UserRepository
     {
-        private const string UserApprovedTemplateRelativePath = @"Templates/UserApproved.txt";
+        private const string UserApprovedTemplateRelativePath = @"MailTemplates/UserApproved.html";
         private readonly ApplicationUserManager userManager;
         private readonly TemplateEmailService templateEmailService;
 
