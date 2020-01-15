@@ -159,6 +159,19 @@ namespace IdentityPattern.Tests
             userRepositoryMock.Verify(x => x.ToggleDisable(userId, true), Times.Once);
         }
 
+        [Test]
+        public async Task DetailsPOST_DisableUserFails_OperationFailedViewReturned()
+        {
+            string userId = Guid.NewGuid().ToString();
+            userRepositoryMock.Setup(x => x.ToggleDisable(userId, true)).Throws(new InvalidOperationException());
+
+            ViewResult result = (ViewResult)await userManagementController.Details(userId, "disable");
+
+            Assert.AreEqual("OperationFailed", result.ViewName);
+
+            userRepositoryMock.Verify(x => x.ToggleDisable(It.IsAny<string>(), It.IsAny<bool>()), Times.Once);
+            userRepositoryMock.Verify(x => x.ToggleDisable(userId, true), Times.Once);
+        }
 
         [Test]
         public async Task DetailsPOST_EnableUser_UserRepositoryToggleDisableInvokedAndRedirectedToDetails()
@@ -171,6 +184,20 @@ namespace IdentityPattern.Tests
             Assert.AreEqual(null, result.RouteValues["Controller"]);
             Assert.AreEqual("Details", result.RouteValues["Action"]);
             Assert.AreEqual(userId, result.RouteValues["Id"]);
+
+            userRepositoryMock.Verify(x => x.ToggleDisable(It.IsAny<string>(), It.IsAny<bool>()), Times.Once);
+            userRepositoryMock.Verify(x => x.ToggleDisable(userId, false), Times.Once);
+        }
+
+        [Test]
+        public async Task DetailsPOST_EnableUserFails_OperationFailedViewReturned()
+        {
+            string userId = Guid.NewGuid().ToString();
+            userRepositoryMock.Setup(x => x.ToggleDisable(userId, false)).Throws(new InvalidOperationException());
+
+            ViewResult result = (ViewResult)await userManagementController.Details(userId, "enable");
+
+            Assert.AreEqual("OperationFailed", result.ViewName);
 
             userRepositoryMock.Verify(x => x.ToggleDisable(It.IsAny<string>(), It.IsAny<bool>()), Times.Once);
             userRepositoryMock.Verify(x => x.ToggleDisable(userId, false), Times.Once);
