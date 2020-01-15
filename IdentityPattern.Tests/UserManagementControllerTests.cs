@@ -7,6 +7,8 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
+using System.Security.Claims;
+using System.Security.Principal;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web;
@@ -30,6 +32,8 @@ namespace IdentityPattern.Tests
         Mock<HttpSessionStateBase> sessionMock;
         Mock<HttpServerUtilityBase> serverMock;
 
+        string runningUserId = Guid.NewGuid().ToString();
+        string runningUserName = "test@somewhere.com";
 
         [SetUp]
         public void Setup()
@@ -75,6 +79,22 @@ namespace IdentityPattern.Tests
             ControllerContext controllerContext = new ControllerContext(contextMock.Object, new RouteData(), userManagementController);
             userManagementController.ControllerContext = controllerContext;
 
+            #region mocking controller.User and User.Identity.GetUserId<string>()
+
+
+
+            List<Claim> claims = new List<Claim>{
+             new Claim("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name", runningUserName),
+             new Claim("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier", runningUserId)
+            };
+
+            var genericIdentity = new GenericIdentity(runningUserName);
+            genericIdentity.AddClaims(claims);
+            var genericPrincipal = new GenericPrincipal(genericIdentity, new string[] { });
+
+            contextMock.SetupGet(x => x.User).Returns(genericPrincipal);
+
+            #endregion mocking controller.User and User.Identity.GetUserId<string>()
         }
 
         [Test]
@@ -122,5 +142,39 @@ namespace IdentityPattern.Tests
             userRepositoryMock.Verify(x => x.Delete(It.IsAny<string>()), Times.Once);
             userRepositoryMock.Verify(x => x.Delete(userId), Times.Once);
         }
+
+        [Test]
+        public async Task DetailsPOST_DisableUser_UserRepositoryToggleDisableInvokedAndRedirectedToDetails()
+        {
+            string userId = Guid.NewGuid().ToString();
+            userRepositoryMock.Setup(x => x.ToggleDisable(userId, true));
+
+            RedirectToRouteResult result = (RedirectToRouteResult)await userManagementController.Details(userId, "disable");
+
+            Assert.AreEqual(null, result.RouteValues["Controller"]);
+            Assert.AreEqual("Details", result.RouteValues["Action"]);
+            Assert.AreEqual(userId, result.RouteValues["Id"]);
+
+            userRepositoryMock.Verify(x => x.ToggleDisable(It.IsAny<string>(), It.IsAny<bool>()), Times.Once);
+            userRepositoryMock.Verify(x => x.ToggleDisable(userId, true), Times.Once);
+        }
+
+
+        [Test]
+        public async Task DetailsPOST_EnableUser_UserRepositoryToggleDisableInvokedAndRedirectedToDetails()
+        {
+            string userId = Guid.NewGuid().ToString();
+            userRepositoryMock.Setup(x => x.ToggleDisable(userId, false));
+
+            RedirectToRouteResult result = (RedirectToRouteResult)await userManagementController.Details(userId, "enable");
+
+            Assert.AreEqual(null, result.RouteValues["Controller"]);
+            Assert.AreEqual("Details", result.RouteValues["Action"]);
+            Assert.AreEqual(userId, result.RouteValues["Id"]);
+
+            userRepositoryMock.Verify(x => x.ToggleDisable(It.IsAny<string>(), It.IsAny<bool>()), Times.Once);
+            userRepositoryMock.Verify(x => x.ToggleDisable(userId, false), Times.Once);
+        }
+
     }
 }
