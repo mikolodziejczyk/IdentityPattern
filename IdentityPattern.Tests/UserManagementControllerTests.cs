@@ -203,5 +203,35 @@ namespace IdentityPattern.Tests
             userRepositoryMock.Verify(x => x.ToggleDisable(userId, false), Times.Once);
         }
 
+        [Test]
+        public async Task DetailsPOST_ApproveUser_UserRepositoryApproveInvokedAndRedirectedToDetails()
+        {
+            string userId = Guid.NewGuid().ToString();
+            userRepositoryMock.Setup(x => x.Approve(userId));
+
+            RedirectToRouteResult result = (RedirectToRouteResult)await userManagementController.Details(userId, "approve");
+
+            Assert.AreEqual(null, result.RouteValues["Controller"]);
+            Assert.AreEqual("Details", result.RouteValues["Action"]);
+            Assert.AreEqual(userId, result.RouteValues["Id"]);
+
+            userRepositoryMock.Verify(x => x.Approve(It.IsAny<string>()), Times.Once);
+            userRepositoryMock.Verify(x => x.Approve(userId), Times.Once);
+        }
+
+        [Test]
+        public async Task DetailsPOST_ApproveFails_OperationFailedViewReturned()
+        {
+            string userId = Guid.NewGuid().ToString();
+            userRepositoryMock.Setup(x => x.Approve(userId)).Throws(new InvalidOperationException());
+
+            ViewResult result = (ViewResult)await userManagementController.Details(userId, "approve");
+
+            Assert.AreEqual("OperationFailed", result.ViewName);
+
+            userRepositoryMock.Verify(x => x.Approve(It.IsAny<string>()), Times.Once);
+            userRepositoryMock.Verify(x => x.Approve(userId), Times.Once);
+        }
+
     }
 }
