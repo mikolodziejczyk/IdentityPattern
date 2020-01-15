@@ -6,7 +6,7 @@
     border-bottom: solid 1px #c9c9c9;
     border-radius: 0px;
     box-shadow: 0 0px 25px 0 rgba(0,0,0, 0.1);
-    z-index: 1;
+    z-index: 1000; // this prevents conflicts with search area
 
     /* Brand logo  */
     a.navbar-brand img {
