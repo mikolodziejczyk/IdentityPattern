@@ -14,7 +14,7 @@ namespace IdentityPattern.Controllers
     [Authorize]
     public class UserManagementController : Controller
     {
-        private const string AdminRoleName = "Admin";
+        internal const string AdminRoleName = "Admin";
         private readonly UserRepository userRepository;
         private readonly ApplicationUserManager userManager;
 
@@ -126,12 +126,16 @@ namespace IdentityPattern.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult NewAdmin(NewAdminMV model)
         {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
             ApplicationUser user = new ApplicationUser() { UserName = model.Email, Email = model.Email, IsApproved = true, EmailConfirmed = true };
-            IdentityResult result = userManager.Create(user, model.Password);
+            IdentityResult result = userManager.Create(user, model.Password); // user.Id is set here
 
             if (result.Succeeded)
             {
-                user = userManager.FindByName(model.Email);
                 userManager.AddToRole(user.Id, AdminRoleName);
 
                 log.InfoFormat("A new administrator {0} has been added by {1}.", model.Email, User.Identity.Name);

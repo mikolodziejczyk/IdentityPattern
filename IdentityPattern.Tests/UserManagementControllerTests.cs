@@ -1,4 +1,5 @@
 ﻿using IdentityPattern.Controllers;
+using IdentityPattern.Models.UserManagement;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.EntityFramework;
 using Moq;
@@ -233,5 +234,100 @@ namespace IdentityPattern.Tests
             userRepositoryMock.Verify(x => x.Approve(userId), Times.Once);
         }
 
+        [Test]
+        public void NewAdminGET_MethodCalled_ViewReturned()
+        {
+            ViewResult result = (ViewResult)userManagementController.NewAdmin();
+
+            Assert.AreEqual(typeof(NewAdminMV), result.Model.GetType());
+            Assert.AreEqual(String.Empty, result.ViewName); // return the view for this method
+        }
+
+        [Test]
+        public void NewAdminPOST_ModelStateInvalid_ViewReturned_CreateUserNotCalled()
+        {
+            NewAdminMV newAdminMV = new NewAdminMV() { Email = "somebody@somewhere.com", Password = "abc123!", ConfirmPassword = "abc123!" };
+
+            userManagementController.ModelState.AddModelError(nameof(NewAdminMV.Email), "Any error message");
+
+            ViewResult result = (ViewResult)userManagementController.NewAdmin(newAdminMV);
+
+            Assert.AreEqual(newAdminMV, result.Model);
+            Assert.AreEqual(String.Empty, result.ViewName); // return the view for this method
+
+            applicationUserManagerMock.Verify(x => x.CreateAsync(It.IsAny<ApplicationUser>()), Times.Never);
+        }
+
+        [Test]
+        public void NewAdminPOST_UserSpecifiesWrongData_ExpectedModelErrorMessageSet()
+        {
+            // we are testing the path when applicationUserManagerMock.Create() returns an error
+
+            string errorMessageFromCreate = "An error message from create";
+            applicationUserManagerMock.Setup(x => x.CreateAsync(It.IsAny<ApplicationUser>(), It.IsAny<string>())).Returns(Task.FromResult<IdentityResult>(new IdentityResult(errorMessageFromCreate)));
+
+            NewAdminMV newAdminMV = new NewAdminMV() { Email = "somebody@somewhere.com", Password = "abc123!", ConfirmPassword = "abc123!" };
+
+            ViewResult result = (ViewResult)userManagementController.NewAdmin(newAdminMV);
+
+            AssertModelErrorMessage(userManagementController.ModelState, errorMessageFromCreate);
+
+            Assert.AreEqual(newAdminMV, result.Model);
+            Assert.AreEqual(String.Empty, result.ViewName); // return the view for this method
+        }
+
+
+        [Test]
+        public void NewAdminPOST_CorrectDataSpecified_CreateCalledWithExpectedParametersAndRoleAddedAndDetailsReturned()
+        {
+            string createdUserId = Guid.NewGuid().ToString();
+            ApplicationUser receivedApplicationUser = null;
+            string receivedPassword = null;
+
+            applicationUserManagerMock.Setup(x => x.CreateAsync(It.IsAny<ApplicationUser>(), It.IsAny<string>()))
+                .Returns(Task.FromResult<IdentityResult>(IdentityResult.Success))
+                .Callback((ApplicationUser applicationUser, string password) => { applicationUser.Id = createdUserId; receivedApplicationUser = applicationUser; receivedPassword = password; });
+
+            NewAdminMV newAdminMV = new NewAdminMV() { Email = "somebody@somewhere.com", Password = "abc123!", ConfirmPassword = "abc123!" };
+
+            RedirectToRouteResult result = (RedirectToRouteResult)userManagementController.NewAdmin(newAdminMV);
+
+            // has applicationUserManager.CreateAsync() been called with correct parameters?
+
+            Assert.AreEqual(newAdminMV.Email, receivedApplicationUser.Email);
+            Assert.AreEqual(newAdminMV.Password, receivedPassword);
+            Assert.IsTrue(receivedApplicationUser.IsApproved);
+            Assert.IsTrue(receivedApplicationUser.EmailConfirmed);
+
+            // has applicationUserManager.AddToRole() been called with correct parameters?
+
+            applicationUserManagerMock.Verify(x => x.AddToRoleAsync(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
+            applicationUserManagerMock.Verify(x => x.AddToRoleAsync(createdUserId, UserManagementController.AdminRoleName), Times.Once);
+
+            // is details view returned
+
+            Assert.AreEqual(null, result.RouteValues["Controller"]);
+            Assert.AreEqual("Details", result.RouteValues["Action"]);
+            Assert.AreEqual(createdUserId, result.RouteValues["Id"]);
+        }
+
+        /// <summary>
+        /// Asserts that the specified model error has been set on the whole model.
+        /// </summary>
+        /// <param name="modelState"></param>
+        /// <param name="expectedErrorMessage"></param>
+        private void AssertModelErrorMessage(ModelStateDictionary modelState, string expectedErrorMessage)
+        {
+            string actualErrorMessage = GetFirstErrorValue(modelState);
+            Assert.AreEqual(expectedErrorMessage, actualErrorMessage);
+
+            string actualErrorProperty = modelState.First().Key;
+            Assert.AreEqual(String.Empty, actualErrorProperty);
+        }
+
+        private string GetFirstErrorValue(ModelStateDictionary modelState)
+        {
+            return modelState.First().Value.Errors.First().ErrorMessage;
+        }
     }
 }
